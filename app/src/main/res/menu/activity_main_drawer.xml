@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_fv100"
+            android:icon="@drawable/ic_perm_device_information_black_24dp"
+            android:title="@string/menu_fv100"
+            android:visible="true" />
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home_black_24dp"
+            android:title="@string/menu_home"
+            android:visible="false" />
+        <item
+            android:id="@+id/nav_gallery"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="@string/menu_gallery"
+            android:visible="false" />
+        <item
+            android:id="@+id/nav_slideshow"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="@string/menu_slideshow"
+            android:visible="false" />
+    </group>
+
+    <item android:title="@string/navigation_group_settings"
+        android:visible="false" >
+        <menu>
+            <item
+                android:id="@+id/nav_tools"
+                android:icon="@drawable/ic_settings_black_24dp"
+                android:title="@string/menu_tool_settings"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/nav_settings_bluetooth"
+                android:icon="@drawable/ic_settings_bluetooth_black_24dp"
+                android:title="@string/menu_settings_bluetooth"
+                android:visible="false" />
+        </menu>
+    </item>
+
+</menu>

@@ -39,4 +39,10 @@
     <string name="query_device">Query to device</string>
 
     <string name="start_query">Connect to </string>
+
+    <string name="not_support_android_version">Android version is too old, please use another device.</string>
+    <string name="not_support_ble">This device does not support BLE feature, so please use another one.</string>
+    <string name="ble_scan_start_failure">BLE scan start failure.</string>
+    <string name="scan_fail_via_ble">BLE scan failure.</string>
+    <string name="ble_scan_finished">SCAN FINISHED.</string>
 </resources>

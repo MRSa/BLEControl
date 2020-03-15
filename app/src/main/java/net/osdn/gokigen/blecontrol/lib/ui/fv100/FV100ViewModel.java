@@ -20,6 +20,11 @@ public class FV100ViewModel extends ViewModel
         mText.setValue(data);
     }
 
+    void addText(@NonNull String data)
+    {
+        mText.setValue(mText.getValue() + data);
+    }
+
     public LiveData<String> getText()
     {
         return (mText);

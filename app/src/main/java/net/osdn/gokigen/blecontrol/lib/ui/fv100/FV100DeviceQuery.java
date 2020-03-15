@@ -1,25 +1,28 @@
 package net.osdn.gokigen.blecontrol.lib.ui.fv100;
 
-import android.content.Context;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 
 import net.osdn.gokigen.blecontrol.lib.ble.R;
+import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
+import net.osdn.gokigen.blecontrol.lib.ble.connection.fv100.FV100BleDeviceConnector;
 
-public class FV100DeviceQuery implements View.OnClickListener
+public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater
 {
-    private String TAG = toString();
-    private final Context context;
+    //private String TAG = toString();
+    private final FragmentActivity context;
     private final DeviceInfo deviceInfo;
     private final FV100ViewModel viewModel;
+    private final FV100BleDeviceConnector deviceConnector;
 
-    FV100DeviceQuery(@NonNull Context context, @NonNull DeviceInfo deviceInfo, @NonNull FV100ViewModel viewModel)
+    FV100DeviceQuery(@NonNull FragmentActivity context, @NonNull DeviceInfo deviceInfo, @NonNull FV100ViewModel viewModel)
     {
         this.context = context;
         this.deviceInfo = deviceInfo;
         this.viewModel = viewModel;
+        this.deviceConnector = new FV100BleDeviceConnector(context, this);
     }
 
     @Override
@@ -27,11 +30,17 @@ public class FV100DeviceQuery implements View.OnClickListener
     {
         try
         {
-            String deviceName = deviceInfo.getQueryDeviceName();
+            final String deviceName = deviceInfo.getQueryDeviceName();
             viewModel.setText(context.getString(R.string.start_query)+ " '" + deviceName + "'");
             if (deviceName.length() > 1)
             {
-                query_to_device_impl(deviceName);
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        deviceConnector.query_to_device(deviceName);
+                    }
+                });
+                thread.start();
             }
         }
         catch (Exception e)
@@ -40,10 +49,16 @@ public class FV100DeviceQuery implements View.OnClickListener
         }
     }
 
-    private void query_to_device_impl(String deviceName)
+    @Override
+    public void setText(String data)
     {
-        // TODO ----- QUERY TO BLUETOOTH DEVICE
+        viewModel.setText(data);
+    }
 
+    @Override
+    public void addText(String data)
+    {
+        viewModel.addText(data);
     }
 
     interface DeviceInfo

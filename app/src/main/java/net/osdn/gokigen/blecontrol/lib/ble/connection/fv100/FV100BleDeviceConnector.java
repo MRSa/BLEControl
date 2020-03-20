@@ -19,23 +19,20 @@ import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
 public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
 {
     private String TAG = toString();
-    private static final int BLE_SCAN_TIMEOUT_MILLIS = 15 * 1000; // 15秒間
+    private static final int BLE_SCAN_TIMEOUT_MILLIS = 10 * 1000; // 10秒間
     private static final int BLE_WAIT_DURATION  = 100;           // 100ms間隔
     private final FragmentActivity context;
-    private final ITextDataUpdater dataUpdater;
     private FV100Communicator communicator = null;
     private boolean foundBleDevice = false;
 
     public FV100BleDeviceConnector(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
     {
         this.context = context;
-        this.dataUpdater = dataUpdater;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
         {
             communicator = new FV100Communicator(context, dataUpdater);
         }
     }
-
 
     public void query_to_device(String deviceName)
     {
@@ -85,7 +82,7 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
                 public void run() {
                     try
                     {
-                        // Snackbarで カメラ起動エラーがあったことを通知する
+                        // Snackbarでメッセージを通知する
                         Snackbar.make(context.findViewById(R.id.drawer_layout), message, Snackbar.LENGTH_LONG).show();
 
                         // Toastで カメラ起動エラーがあったことを通知する
@@ -127,7 +124,7 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
                 if (foundBleDevice)
                 {
                     // デバイス発見
-                    Log.v(TAG, "FOUND BLE DEVICE.");
+                    Log.v(TAG, "FOUND DEVICE");
                     break;
                 }
 
@@ -146,12 +143,6 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
             showMessage(R.string.scan_fail_via_ble);
         }
         Log.v(TAG, "Bluetooth LE SCAN STOPPED");
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                dataUpdater.addText("\n\n" + context.getString(R.string.ble_scan_finished));
-            }
-        });
     }
 
     @Override

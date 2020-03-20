@@ -18,6 +18,7 @@ class FV100ObjectPaser
     private static final int REPLY_HARDWARE_ID = 11;
     private static final int REPLY_WIFI_MODE = 1;
     private static final int REPLY_WIFI_INFO = 61441;
+    private static final int DUPLICATE_CONNECTION = 1793;
     private static final int EVENT_STATUS = 7;
 
     private final ReceivedDataNotify notifier;
@@ -83,6 +84,10 @@ class FV100ObjectPaser
                         parsedData = parseDirectoryContentMessage(msgId, object);
                         break;
 
+                    case DUPLICATE_CONNECTION:
+                        parsedData = parseDuplicateConnection(receivedData);
+                        break;
+
                     case EVENT_STATUS:
                         //  {"msg_id":7,"type":"operation_mode","mode":"wireless","param":"Connection"}
                         parsedData = parseEventMessage(msgId, object);
@@ -138,7 +143,10 @@ class FV100ObjectPaser
             int rval = getObjectInt(object, "rval");
             int param = getObjectInt(object, "param");
             //parsedData = "id: " + msgId + " rval: " + rval + " param: " + param;
-            parsedData = " Initial. : " + param + "(" + rval + ")";
+            if (rval == 0)
+            {
+                parsedData = " Initial. : " + param + "(" + rval + ")";
+            }
             notifier.setTokenId(param);
         }
         catch (Exception e)
@@ -158,7 +166,10 @@ class FV100ObjectPaser
             //  {"rval":0,"msg_id":2,"type":"gps_info"}
             int rval = getObjectInt(object, "rval");
             String type = getObjectString(object, "type");
-            parsedData = " " + type + " : " + rval;
+            if (rval == 0)
+            {
+                parsedData = " " + type + " : " + rval;
+            }
         }
         catch (Exception e)
         {
@@ -177,7 +188,10 @@ class FV100ObjectPaser
             int rval = getObjectInt(object, "rval");
             String type = getObjectString(object, "type");
             int param = getObjectInt(object, "param");
-            parsedData = " Battery: " + param + "% " + type;
+            if (rval == 0)
+            {
+                parsedData = " Battery: " + param + "% " + type;
+            }
         }
         catch (Exception e)
         {
@@ -198,7 +212,10 @@ class FV100ObjectPaser
             int free = getObjectInt(object, "free");
             int photo = getObjectInt(object, "photo_num");
             int video = getObjectInt(object, "video_length");
-            parsedData = " Memory Card : " + free + "/" + total + "\n (photo: " + photo + " video: " + video + ")";
+            if (rval == 0)
+            {
+                parsedData = " Memory Card : " + free + "/" + total + "\n (photo: " + photo + " video: " + video + ")";
+            }
         }
         catch (Exception e)
         {
@@ -220,7 +237,10 @@ class FV100ObjectPaser
             String serial_number = getObjectString(object, "serial_number");
             String firmware_version = getObjectString(object, "firmware_version");
             String rf_version = getObjectString(object, "rf_version");
-            parsedData = " Model: " + model_number + "\n Serial: " + serial_number + "\n WIFI: " + wifi_mac + "\n BLE: " + ble_mac + "\n FirmVer: " + firmware_version + "\n RF_Ver.: " + rf_version + "\n";
+            if (rval == 0)
+            {
+                parsedData = " Model: " + model_number + "\n Serial: " + serial_number + "\n WIFI: " + wifi_mac + "\n BLE: " + ble_mac + "\n FirmVer: " + firmware_version + "\n RF_Ver.: " + rf_version + "\n";
+            }
         }
         catch (Exception e)
         {
@@ -238,7 +258,10 @@ class FV100ObjectPaser
             int rval = getObjectInt(object, "rval");
             String type = getObjectString(object, "type");
             String param = getObjectString(object, "param");
-            parsedData = " WIFI: " + type + " : " + param + " (" + rval + ")";
+            if (rval == 0)
+            {
+                parsedData = " WIFI: " + type + " : " + param + " (" + rval + ")";
+            }
         }
         catch (Exception e)
         {
@@ -256,7 +279,10 @@ class FV100ObjectPaser
             int rval = getObjectInt(object, "rval");
             String ssid = getObjectString(object, "ssid");
             String passwd = getObjectString(object, "passwd");
-            parsedData = " WIFI: " + ssid + "  " + passwd + " (" + rval + ")\n\n\n";
+            if (rval == 0)
+            {
+                parsedData = " WIFI: " + ssid + "  " + passwd + "\n\n\n\n";
+            }
             notifier.detectWifiKey(ssid, passwd);
         }
         catch (Exception e)
@@ -292,13 +318,23 @@ class FV100ObjectPaser
             String type = getObjectString(object, "type");
             String param = getObjectString(object, "param");
             String mode = getObjectString(object, "mode");
-            parsedData = " " + type + " : " + param + " " + mode;
+            if (rval == 0)
+            {
+                parsedData = " " + type + " : " + param + " " + mode;
+            }
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
         return (parsedData);
+    }
+
+    private String parseDuplicateConnection(String receivedData)
+    {
+        String data = receivedData.substring(receivedData.indexOf("{"));
+        Log.v(TAG, " RECV: " + data);
+        return (" : " + parseData(data.substring(data.indexOf("{",2))));
     }
 
     private String parseEventMessage(int msgId, @NonNull JSONObject object)

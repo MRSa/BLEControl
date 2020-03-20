@@ -18,7 +18,6 @@ import androidx.fragment.app.FragmentActivity;
 import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
 
 import java.io.ByteArrayOutputStream;
-import java.util.List;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -33,6 +32,7 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
     private ByteArrayOutputStream receiveBuffer;
     private final FV100ObjectPaser objectParser;
     private final FV100SendMessageProvider sendMessageProvider;
+    private BluetoothGatt btGatt = null;
 
     FV100Communicator(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
     {
@@ -78,11 +78,29 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
         context.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                dataUpdater.setText(" ");
+                if (btGatt != null)
+                {
+                    // 画面をクリアする
+                    dataUpdater.setText(" ");
 
-                // reload
-
-
+                    // 最初から情報を取り直す。
+                    sendMessageProvider.resetSequence();
+                    startQuery = false;
+                    try
+                    {
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                queryDeviceProperty(btGatt);
+                            }
+                        });
+                        thread.start();
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
     }
@@ -137,6 +155,7 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
             try
             {
                 setCharacteristicNotification(gatt);
+/*
                 List<BluetoothGattService> services = gatt.getServices();
                 for (BluetoothGattService service : services)
                 {
@@ -158,8 +177,10 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
                         }
                     }
                 }
+*/
+                btGatt = gatt;
                 //expandMtu(gatt,512);
-                queryDeviceProperty(gatt);
+                queryDeviceProperty(gatt);  // expandMtu を使う場合にはここを呼ばない
 
                 //gatt.close();
             }
@@ -167,7 +188,6 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
             {
                 e.printStackTrace();
             }
-            //Log.v(TAG, " ------------------------");
         }
     }
 
@@ -186,8 +206,8 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
             BluetoothGattService service = gatt.getService(UUID.fromString("0000a108-0000-1000-8000-00805f9b34fb"));
             BluetoothGattCharacteristic characteristicWrite = service.getCharacteristic(UUID.fromString("0000a155-0000-1000-8000-00805f9b34fb"));
             characteristicWrite.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-            boolean ret = characteristicWrite.setValue(sendMessage);
-            boolean ret2 = gatt.writeCharacteristic(characteristicWrite);
+            characteristicWrite.setValue(sendMessage);
+            gatt.writeCharacteristic(characteristicWrite);
             //Log.v(TAG, " >> SEND [" + sendMessage.length + "] " + ret + " " + ret2 + " " + new String(sendMessage));
         }
         catch (Exception e)
@@ -213,23 +233,6 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
             e.printStackTrace();
         }
     }
-
-/*
-    private void expandMtu(BluetoothGatt gatt, int size)
-    {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        {
-            // MTUサイズの拡張を要求
-            if (!mtuSizeIsExpanded)
-            {
-                if (!gatt.requestMtu(size))
-                {
-                    Log.v(TAG, "Failed to expand MTU value.");
-                }
-            }
-        }
-    }
-*/
 
     private void setCharacteristicNotification(BluetoothGatt gatt)
     {
@@ -263,17 +266,17 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
 
             if (!sendMessageProvider.isMessageFinished())
             {
-                //secondMessageSend = true;
-                try {
-                    // byte[] sendMessage = {0x03, 0x6b, 0x65, 0x6e, 0x22, 0x3a, 0x30, 0x7d};
+                try
+                {
                     byte[] sendMessage = sendMessageProvider.provideMessage();
                     BluetoothGattService service = gatt.getService(UUID.fromString("0000a108-0000-1000-8000-00805f9b34fb"));
                     BluetoothGattCharacteristic characteristicWrite = service.getCharacteristic(UUID.fromString("0000a155-0000-1000-8000-00805f9b34fb"));
                     characteristicWrite.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-                    boolean ret = characteristicWrite.setValue(sendMessage);
-                    boolean ret2 = gatt.writeCharacteristic(characteristicWrite);
-                    //Log.v(TAG, " << SEND [" + sendMessage.length + "] " + ret + " " + ret2 + " " + new String(sendMessage));
-                } catch (Exception e) {
+                    characteristicWrite.setValue(sendMessage);
+                    gatt.writeCharacteristic(characteristicWrite);
+                }
+                catch (Exception e)
+                {
                     e.printStackTrace();
                 }
             }
@@ -346,7 +349,6 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
     public void detectWifiKey(String ssId, String key)
     {
         Log.v(TAG, " WIFI KEY : " + ssId + " " + key);
-
     }
 
 /*
@@ -366,5 +368,21 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
             queryDeviceProperty(gatt);
         }
     }
+
+    private void expandMtu(BluetoothGatt gatt, int size)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            // MTUサイズの拡張を要求
+            if (!mtuSizeIsExpanded)
+            {
+                if (!gatt.requestMtu(size))
+                {
+                    Log.v(TAG, "Failed to expand MTU value.");
+                }
+            }
+        }
+    }
 */
+
 }

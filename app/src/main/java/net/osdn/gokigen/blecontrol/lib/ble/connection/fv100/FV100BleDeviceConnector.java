@@ -19,7 +19,7 @@ import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
 public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
 {
     private String TAG = toString();
-    private static final int BLE_SCAN_TIMEOUT_MILLIS = 10 * 1000; // 10秒間
+    private static final int BLE_SCAN_TIMEOUT_MILLIS = 15 * 1000; // 15秒間
     private static final int BLE_WAIT_DURATION  = 100;           // 100ms間隔
     private final FragmentActivity context;
     private final ITextDataUpdater dataUpdater;

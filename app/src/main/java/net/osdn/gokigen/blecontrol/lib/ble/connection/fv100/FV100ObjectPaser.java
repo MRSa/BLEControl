@@ -256,7 +256,7 @@ class FV100ObjectPaser
             int rval = getObjectInt(object, "rval");
             String ssid = getObjectString(object, "ssid");
             String passwd = getObjectString(object, "passwd");
-            parsedData = " WIFI: " + ssid + "  " + passwd + " (" + rval + ")";
+            parsedData = " WIFI: " + ssid + "  " + passwd + " (" + rval + ")\n\n\n";
             notifier.detectWifiKey(ssid, passwd);
         }
         catch (Exception e)

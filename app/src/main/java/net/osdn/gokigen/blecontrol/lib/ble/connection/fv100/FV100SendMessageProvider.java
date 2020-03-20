@@ -129,9 +129,9 @@ class FV100SendMessageProvider
         typeList.add(null);
         paramList.add(null);
 
-        msgIdList.add(1);      // {"msg_id":1,"token":1,"type":"ap_mode"}
-        typeList.add("ap_mode");
-        paramList.add(null);
+        //msgIdList.add(1);      // {"msg_id":1,"token":1,"type":"ap_mode"}
+        //typeList.add("ap_mode");
+        //paramList.add(null);
 
         msgIdList.add(61441);  // {"msg_id":61441,"token":1}
         typeList.add(null);

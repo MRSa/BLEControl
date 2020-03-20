@@ -1,5 +1,6 @@
 package net.osdn.gokigen.blecontrol.lib.ui.fv100;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -11,7 +12,7 @@ import net.osdn.gokigen.blecontrol.lib.ble.connection.fv100.FV100BleDeviceConnec
 
 public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater
 {
-    //private String TAG = toString();
+    private String TAG = toString();
     private final FragmentActivity context;
     private final DeviceInfo deviceInfo;
     private final FV100ViewModel viewModel;
@@ -25,8 +26,7 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater
         this.deviceConnector = new FV100BleDeviceConnector(context, this);
     }
 
-    @Override
-    public void onClick(View v)
+    private void deviceQuery()
     {
         try
         {
@@ -46,6 +46,45 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater
         catch (Exception e)
         {
             e.printStackTrace();
+        }
+    }
+
+    private void dataReload()
+    {
+        try
+        {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    deviceConnector.reload_device_information();
+                }
+            });
+            thread.start();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Override
+    public void onClick(@NonNull View v)
+    {
+        int id = v.getId();
+        switch (id)
+        {
+            case R.id.query_to_device:
+                deviceQuery();
+                break;
+
+            case R.id.reload_button:
+                dataReload();
+                break;
+
+            default:
+                Log.v(TAG, " onClick : " + id);
+                break;
         }
     }
 

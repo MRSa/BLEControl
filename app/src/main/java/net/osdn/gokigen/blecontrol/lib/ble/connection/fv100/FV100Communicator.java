@@ -18,12 +18,11 @@ import androidx.fragment.app.FragmentActivity;
 import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-class FV100Communicator  extends BluetoothGattCallback
+class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPaser.ReceivedDataNotify
 {
     private String TAG = toString();
     private final FragmentActivity context;
@@ -31,16 +30,17 @@ class FV100Communicator  extends BluetoothGattCallback
     //private boolean mtuSizeIsExpanded = false;
     private boolean startQuery = false;
     private boolean onConnected = false;
-    private boolean secondMessageSend = false;
     private ByteArrayOutputStream receiveBuffer;
     private final FV100ObjectPaser objectParser;
+    private final FV100SendMessageProvider sendMessageProvider;
 
     FV100Communicator(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
     {
         this.context = context;
         this.dataUpdater = dataUpdater;
         this.receiveBuffer = new ByteArrayOutputStream();
-        this.objectParser = new FV100ObjectPaser();
+        this.objectParser = new FV100ObjectPaser(this);
+        this.sendMessageProvider = new FV100SendMessageProvider();
     }
 
     void startCommunicate(@Nullable final BluetoothDevice device)
@@ -71,6 +71,22 @@ class FV100Communicator  extends BluetoothGattCallback
             e.printStackTrace();
         }
     }
+
+    void data_reload()
+    {
+        Log.v(TAG, " RELOAD ");
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dataUpdater.setText(" ");
+
+                // reload
+
+
+            }
+        });
+    }
+
 
     private void communicateMain(@NonNull BluetoothDevice device)
     {
@@ -151,7 +167,7 @@ class FV100Communicator  extends BluetoothGattCallback
             {
                 e.printStackTrace();
             }
-            Log.v(TAG, " ------------------------");
+            //Log.v(TAG, " ------------------------");
         }
     }
 
@@ -165,38 +181,20 @@ class FV100Communicator  extends BluetoothGattCallback
         startQuery = true;
         try
         {
-            byte[] messageToSend = createSendMessage(257, 0);
-            byte[] sendMessage = Arrays.copyOfRange(messageToSend, 0, 20);
+            sendMessageProvider.resetSequence();
+            byte[] sendMessage = sendMessageProvider.provideMessage();
             BluetoothGattService service = gatt.getService(UUID.fromString("0000a108-0000-1000-8000-00805f9b34fb"));
             BluetoothGattCharacteristic characteristicWrite = service.getCharacteristic(UUID.fromString("0000a155-0000-1000-8000-00805f9b34fb"));
             characteristicWrite.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
             boolean ret = characteristicWrite.setValue(sendMessage);
             boolean ret2 = gatt.writeCharacteristic(characteristicWrite);
-            Log.v(TAG, " >> SEND [" + sendMessage.length + "] " + ret + " " + ret2 + " " + new String(sendMessage));
+            //Log.v(TAG, " >> SEND [" + sendMessage.length + "] " + ret + " " + ret2 + " " + new String(sendMessage));
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
         // startQuery = false;
-    }
-
-    private byte[] createSendMessage(int msg_id, int token)
-    {
-        String data = ("{\"msg_id\":" + msg_id + ",\"token\":" + token + "}");
-
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try
-        {
-            byte[] header = {(byte) 0x01, (byte) 0x00, (byte) 0x18};
-            output.write(header);
-            output.write(data.getBytes());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return (output.toByteArray());
     }
 
     private void addTextInformation(final String message)
@@ -263,17 +261,18 @@ class FV100Communicator  extends BluetoothGattCallback
             String value = characteristic.getStringValue(0);
             Log.v(TAG, " W: BluetoothGatt.GATT_SUCCESS " + characteristic.getUuid() + "  (" + value + ") ");
 
-            if (!secondMessageSend)
+            if (!sendMessageProvider.isMessageFinished())
             {
-                secondMessageSend = true;
+                //secondMessageSend = true;
                 try {
-                    byte[] sendMessage = {0x03, 0x6b, 0x65, 0x6e, 0x22, 0x3a, 0x30, 0x7d};
+                    // byte[] sendMessage = {0x03, 0x6b, 0x65, 0x6e, 0x22, 0x3a, 0x30, 0x7d};
+                    byte[] sendMessage = sendMessageProvider.provideMessage();
                     BluetoothGattService service = gatt.getService(UUID.fromString("0000a108-0000-1000-8000-00805f9b34fb"));
                     BluetoothGattCharacteristic characteristicWrite = service.getCharacteristic(UUID.fromString("0000a155-0000-1000-8000-00805f9b34fb"));
                     characteristicWrite.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
                     boolean ret = characteristicWrite.setValue(sendMessage);
                     boolean ret2 = gatt.writeCharacteristic(characteristicWrite);
-                    Log.v(TAG, " << SEND [" + sendMessage.length + "] " + ret + " " + ret2 + " " + new String(sendMessage));
+                    //Log.v(TAG, " << SEND [" + sendMessage.length + "] " + ret + " " + ret2 + " " + new String(sendMessage));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -318,10 +317,10 @@ class FV100Communicator  extends BluetoothGattCallback
                 receiveBuffer = null;
                 receiveBuffer = new ByteArrayOutputStream();
             }
-            else
-            {
-                Log.v(TAG, " onCharacteristicChanged() : " + characteristic.getUuid() + " [" + messageAttribute + "]" + receivedValue.length);
-            }
+            //else
+            //{
+            //    Log.v(TAG, " onCharacteristicChanged() : " + characteristic.getUuid() + " [" + messageAttribute + "]" + receivedValue.length);
+            //}
         }
         catch (Exception e)
         {
@@ -335,6 +334,19 @@ class FV100Communicator  extends BluetoothGattCallback
     {
         Log.v(TAG, " onDescriptorWrite() : " + descriptor.getUuid() + " status : " + status);
         super.onDescriptorWrite(gatt, descriptor, status);
+    }
+
+    @Override
+    public void setTokenId(int id)
+    {
+        sendMessageProvider.setTokenId(id);
+    }
+
+    @Override
+    public void detectWifiKey(String ssId, String key)
+    {
+        Log.v(TAG, " WIFI KEY : " + ssId + " " + key);
+
     }
 
 /*

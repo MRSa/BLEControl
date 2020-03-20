@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -56,9 +57,17 @@ public class FV100Fragment extends Fragment implements FV100DeviceQuery.DeviceIn
 
                 // Device Query Button
                 final Button queryButton = root.findViewById(R.id.query_to_device);
+                FV100DeviceQuery deviceQuery = new FV100DeviceQuery(context, this, fv100ViewModel);
                 if (queryButton != null)
                 {
-                    queryButton.setOnClickListener(new FV100DeviceQuery(context, this, fv100ViewModel));
+                    queryButton.setOnClickListener(deviceQuery);
+                }
+
+                // Reload Button
+                final ImageButton reloadButton = root.findViewById(R.id.reload_button);
+                if (reloadButton != null)
+                {
+                    reloadButton.setOnClickListener(deviceQuery);
                 }
             }
         }

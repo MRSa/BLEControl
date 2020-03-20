@@ -22,12 +22,14 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
     private static final int BLE_SCAN_TIMEOUT_MILLIS = 10 * 1000; // 10秒間
     private static final int BLE_WAIT_DURATION  = 100;           // 100ms間隔
     private final FragmentActivity context;
+    private final ITextDataUpdater dataUpdater;
     private FV100Communicator communicator = null;
     private boolean foundBleDevice = false;
 
     public FV100BleDeviceConnector(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
     {
         this.context = context;
+        this.dataUpdater = dataUpdater;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
         {
             communicator = new FV100Communicator(context, dataUpdater);
@@ -63,6 +65,24 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
             {
                 // Androidのバージョンが低かった
                 showMessage(R.string.not_support_android_version);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void reload_device_information()
+    {
+        try
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            {
+                if (communicator != null)
+                {
+                    communicator.data_reload();
+                }
             }
         }
         catch (Exception e)
@@ -143,6 +163,12 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
             showMessage(R.string.scan_fail_via_ble);
         }
         Log.v(TAG, "Bluetooth LE SCAN STOPPED");
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dataUpdater.setText(context.getString(R.string.ble_scan_finished));
+            }
+        });
     }
 
     @Override

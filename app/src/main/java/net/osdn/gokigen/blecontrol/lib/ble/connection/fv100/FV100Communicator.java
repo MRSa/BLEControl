@@ -33,6 +33,8 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
     private final FV100ObjectPaser objectParser;
     private final FV100SendMessageProvider sendMessageProvider;
     private BluetoothGatt btGatt = null;
+    private String wifiSsId = null;
+    private String wifiKey = null;
 
     FV100Communicator(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
     {
@@ -103,6 +105,22 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
                 }
             }
         });
+    }
+
+    void connect_wifi()
+    {
+        try
+        {
+            if ((wifiSsId != null)&&(wifiKey != null))
+            {
+                Log.v(TAG, "connect_wifi  SSID : " + wifiSsId + "  Key : " + wifiKey);
+
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
 
@@ -349,6 +367,8 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
     public void detectWifiKey(String ssId, String key)
     {
         Log.v(TAG, " WIFI KEY : " + ssId + " " + key);
+        wifiSsId = ssId;
+        wifiKey = key;
     }
 
 /*

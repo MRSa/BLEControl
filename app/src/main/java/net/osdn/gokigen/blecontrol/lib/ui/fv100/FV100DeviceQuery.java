@@ -67,6 +67,24 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater
         }
     }
 
+    private void connectToCamera()
+    {
+        try
+        {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    deviceConnector.connect_to_camera_via_wifi();
+                }
+            });
+            thread.start();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public void onClick(@NonNull View v)
@@ -80,6 +98,10 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater
 
             case R.id.reload_button:
                 dataReload();
+                break;
+
+            case R.id.wifi_connect_button:
+                connectToCamera();
                 break;
 
             default:

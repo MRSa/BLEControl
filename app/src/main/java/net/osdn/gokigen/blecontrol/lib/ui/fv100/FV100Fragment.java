@@ -69,6 +69,13 @@ public class FV100Fragment extends Fragment implements FV100DeviceQuery.DeviceIn
                 {
                     reloadButton.setOnClickListener(deviceQuery);
                 }
+
+                // WiFi Connect Button
+                final ImageButton wifiConnectButton = root.findViewById(R.id.wifi_connect_button);
+                if (reloadButton != null)
+                {
+                    wifiConnectButton.setOnClickListener(deviceQuery);
+                }
             }
         }
         catch (Exception e)

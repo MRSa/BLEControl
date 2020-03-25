@@ -91,6 +91,26 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
         }
     }
 
+    public void connect_to_camera_via_wifi()
+    {
+        try
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            {
+                // WiFi経由でカメラに接続する
+                if (communicator != null)
+                {
+                    communicator.connect_wifi();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
     private void showMessage(int stringId)
     {
         try
@@ -153,6 +173,7 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
                 passed = passed + BLE_WAIT_DURATION;
             }
             // スキャンを止める
+            Thread.sleep(1000);
             adapter.stopLeScan(finder);
             Log.v(TAG, " ----- BT SCAN STOPPED ----- ");
         }

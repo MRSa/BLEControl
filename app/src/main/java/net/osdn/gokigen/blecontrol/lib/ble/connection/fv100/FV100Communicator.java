@@ -16,33 +16,39 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 
 import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
+import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
+import net.osdn.gokigen.blecontrol.lib.wifi.WifiConnector;
 
 import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPaser.ReceivedDataNotify
+class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPaser.ReceivedDataNotify, WifiConnector.WifiConnectNotify
 {
     private String TAG = toString();
     private final FragmentActivity context;
     private final ITextDataUpdater dataUpdater;
+    private final SnackBarMessage messageToShow;
     //private boolean mtuSizeIsExpanded = false;
     private boolean startQuery = false;
     private boolean onConnected = false;
     private ByteArrayOutputStream receiveBuffer;
     private final FV100ObjectPaser objectParser;
     private final FV100SendMessageProvider sendMessageProvider;
+    private final WifiConnector wifiConnector;
     private BluetoothGatt btGatt = null;
     private String wifiSsId = null;
     private String wifiKey = null;
 
-    FV100Communicator(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
+    FV100Communicator(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater, @NonNull SnackBarMessage messageToShow)
     {
         this.context = context;
         this.dataUpdater = dataUpdater;
+        this.messageToShow = messageToShow;
         this.receiveBuffer = new ByteArrayOutputStream();
         this.objectParser = new FV100ObjectPaser(this);
         this.sendMessageProvider = new FV100SendMessageProvider();
+        this.wifiConnector = new WifiConnector(context, messageToShow);
     }
 
     void startCommunicate(@Nullable final BluetoothDevice device)
@@ -113,8 +119,7 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
         {
             if ((wifiSsId != null)&&(wifiKey != null))
             {
-                Log.v(TAG, "connect_wifi  SSID : " + wifiSsId + "  Key : " + wifiKey);
-
+                wifiConnector.connectToWifi(wifiSsId, wifiKey, this);
             }
         }
         catch (Exception e)
@@ -369,6 +374,13 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
         Log.v(TAG, " WIFI KEY : " + ssId + " " + key);
         wifiSsId = ssId;
         wifiKey = key;
+    }
+
+    @Override
+    public void onWifiConnected(boolean isConnect)
+    {
+        Log.v(TAG, " onWifiConnected : " + isConnect);
+
     }
 
 /*

@@ -11,10 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
+import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
 
 public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
 {
@@ -23,6 +22,7 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
     private static final int BLE_WAIT_DURATION  = 100;           // 100ms間隔
     private final FragmentActivity context;
     private final ITextDataUpdater dataUpdater;
+    private final SnackBarMessage messageToShow;
     private FV100Communicator communicator = null;
     private boolean foundBleDevice = false;
 
@@ -30,9 +30,10 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
     {
         this.context = context;
         this.dataUpdater = dataUpdater;
+        this.messageToShow = new SnackBarMessage(context, false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
         {
-            communicator = new FV100Communicator(context, dataUpdater);
+            communicator = new FV100Communicator(context, dataUpdater, messageToShow);
         }
     }
 
@@ -43,7 +44,7 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
             BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
             if (!btAdapter.isEnabled()) {
                 // Bluetoothの設定がOFFだった
-                showMessage(R.string.ble_setting_is_off);
+                messageToShow.showMessage(R.string.ble_setting_is_off);
             }
             BluetoothManager btMgr;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
@@ -58,13 +59,13 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
                 else
                 {
                     // Bluetooth LEのサポートがない場合は、何もしない
-                    showMessage(R.string.not_support_ble);
+                    messageToShow.showMessage(R.string.not_support_ble);
                 }
             }
             else
             {
                 // Androidのバージョンが低かった
-                showMessage(R.string.not_support_android_version);
+                messageToShow.showMessage(R.string.not_support_android_version);
             }
         }
         catch (Exception e)
@@ -111,36 +112,6 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
     }
 
 
-    private void showMessage(int stringId)
-    {
-        try
-        {
-            final String message = context.getString(stringId);
-            Log.v(TAG, message);
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try
-                    {
-                        // Snackbarでメッセージを通知する
-                        Snackbar.make(context.findViewById(R.id.drawer_layout), message, Snackbar.LENGTH_LONG).show();
-
-                        // Toastで カメラ起動エラーがあったことを通知する
-                        //Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void scanBleDevice(BluetoothManager btMgr, FV100Finder finder)
     {
@@ -154,7 +125,7 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
             {
                 // Bluetooth LEのスキャンが開始できなかった場合...
                 Log.v(TAG, "Bluetooth LE SCAN START fail...");
-                showMessage(R.string.ble_scan_start_failure);
+                messageToShow.showMessage(R.string.ble_scan_start_failure);
                 return;
             }
             Log.v(TAG, " ----- BT SCAN STARTED ----- ");
@@ -181,7 +152,7 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
         {
             e.printStackTrace();
             Log.v(TAG, "Bluetooth LE SCAN EXCEPTION...");
-            showMessage(R.string.scan_fail_via_ble);
+            messageToShow.showMessage(R.string.scan_fail_via_ble);
         }
         Log.v(TAG, "Bluetooth LE SCAN STOPPED");
         context.runOnUiThread(new Runnable() {

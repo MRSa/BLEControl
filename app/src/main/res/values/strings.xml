@@ -44,4 +44,5 @@
     <string name="ble_scan_start_failure">BLE scan start failure.</string>
     <string name="scan_fail_via_ble">BLE scan failure.</string>
     <string name="ble_scan_finished">SCAN FINISHED.</string>
+    <string name="turn_on_wifi_is_failed">Turn on WIFI was failed.</string>
 </resources>

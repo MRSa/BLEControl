@@ -92,6 +92,7 @@ class FV100ObjectPaser
                         //  {"msg_id":7,"type":"operation_mode","mode":"wireless","param":"Connection"}
                         parsedData = parseEventMessage(msgId, object);
                         break;
+
                     default:
                         parsedData = "?(" + msgId + "): " + data;
                         break;
@@ -168,7 +169,11 @@ class FV100ObjectPaser
             String type = getObjectString(object, "type");
             if (rval == 0)
             {
-                parsedData = " " + type + " : " + rval;
+                parsedData = " " + type + " : OK";
+            }
+            else
+            {
+                parsedData = " " + type + " : NG (" + rval + ")";
             }
         }
         catch (Exception e)

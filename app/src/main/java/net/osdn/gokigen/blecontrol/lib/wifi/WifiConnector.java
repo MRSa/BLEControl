@@ -44,7 +44,6 @@ public class WifiConnector
         };
     }
 
-
     private void onReceiveBroadcastOfConnection(Context context, Intent intent)
     {
         String action = intent.getAction();
@@ -75,7 +74,7 @@ public class WifiConnector
             {
                 if (info.getNetworkId() != -1)
                 {
-                        Log.v(TAG, "Network ID is -1, there is no currently connected network.");
+                    Log.v(TAG, "Network ID is NOT -1, there is no currently connected network.");
                 }
             }
             else
@@ -96,14 +95,13 @@ public class WifiConnector
         }
     }
 
-
     public void connectToWifi(@NonNull String wifiSsId, @NonNull String wifiKey, @NonNull WifiConnectNotify callback)
     {
         try
         {
             String message = "connect_wifi\n    SSID : " + wifiSsId + "  Key : " + wifiKey;
             Log.v(TAG, message);
-            messageToShow.showMessage(message);
+            //messageToShow.showMessage(message);
             WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(WIFI_SERVICE);
             turnOnWiFi(wifi);
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
@@ -132,9 +130,11 @@ public class WifiConnector
                 callback.onWifiConnected(false);
                 return;
             }
-            //WifiConfiguration wifiConfig = new WifiConfiguration();
 
             String ssId = "\"" + wifiSsId + "\"";
+            String key = "\"" + wifiKey + "\"";
+            int networkId = -1;
+            WifiConfiguration targetConfiguration = null;
             List<WifiConfiguration> configs = wifi.getConfiguredNetworks();
             for (WifiConfiguration config : configs)
             {
@@ -143,13 +143,35 @@ public class WifiConnector
                 {
                     // すでにネットワークが設定済
                     Log.v(TAG, " FOUND SSID : " + ssId);
+                    config.preSharedKey = key;
+                    networkId = config.networkId;
+                    targetConfiguration = config;
+
                 }
             }
-
-            //IntentFilter filter = new IntentFilter();
-            //filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-            //filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-            //context.registerReceiver(connectionReceiver, filter);
+            if (targetConfiguration == null)
+            {
+                // ネットワークが未設定だった場合...
+                targetConfiguration = new WifiConfiguration();
+                targetConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+                targetConfiguration.SSID = ssId;
+                targetConfiguration.preSharedKey = key;
+                targetConfiguration.hiddenSSID = true;
+                networkId = wifi.addNetwork(targetConfiguration);
+            }
+            if (networkId != -1)
+            {
+                // ネットワークIDが取得できた。有効に。
+                wifi.enableNetwork(networkId, true);
+            }
+            else
+            {
+                // 接続に失敗した
+                messageToShow.showMessage(context.getString(R.string.connect_wifi_failure) + " " + ssId);
+                callback.onWifiConnected(false);
+                return;
+            }
+            messageToShow.showMessage(context.getString(R.string.try_to_connect_wifi) + " " + ssId);
         }
         catch (Exception e)
         {
@@ -162,7 +184,6 @@ public class WifiConnector
 
 
     }
-
 
     private void turnOnWiFi(@Nullable WifiManager wifi)
     {
@@ -183,7 +204,34 @@ public class WifiConnector
         }
     }
 
+    public void startWatchWifiStatus(Context context)
+    {
+        Log.v(TAG, "startWatchWifiStatus()");
+        try
+        {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+            filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+            context.getApplicationContext().registerReceiver(connectionReceiver, filter);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 
+    public void stopWatchWifiStatus(Context context)
+    {
+        Log.v(TAG, "stopWatchWifiStatus()");
+        try
+        {
+            context.getApplicationContext().unregisterReceiver(connectionReceiver);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     public interface WifiConnectNotify
     {

@@ -75,7 +75,7 @@
                 android:visibility="visible" />
 
             <ImageButton
-                android:id="@+id/dummy_button"
+                android:id="@+id/dummy_button1"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:clickable="true"
@@ -85,6 +85,42 @@
                 android:contentDescription="@string/blank"
                 app:srcCompat="@drawable/ic_texture_black_24dp"
                 android:visibility="invisible" />
+
+            <ImageButton
+                android:id="@+id/change_image_size_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/blank"
+                app:srcCompat="@drawable/ic_image_aspect_ratio_black_24dp"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/change_video_size_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/blank"
+                app:srcCompat="@drawable/ic_videocam_black_24dp"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/dummy_button2"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/blank"
+                app:srcCompat="@drawable/ic_texture_black_24dp"
+                android:visibility="gone" />
 
             <ImageButton
                 android:id="@+id/wifi_connect_button"

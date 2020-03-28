@@ -10,7 +10,7 @@ import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
 import net.osdn.gokigen.blecontrol.lib.ble.connection.fv100.FV100BleDeviceConnector;
 
-public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater
+public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater, FV100PropertySetting.PropertySetter
 {
     private String TAG = toString();
     private final FragmentActivity context;
@@ -85,7 +85,6 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater
         }
     }
 
-
     @Override
     public void onClick(@NonNull View v)
     {
@@ -120,6 +119,25 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater
     public void addText(String data)
     {
         viewModel.addText(data);
+    }
+
+    @Override
+    public void setProperty(@NonNull final String propertyName, @NonNull final String propertyValue)
+    {
+        try
+        {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    deviceConnector.setProperty(propertyName, propertyValue);
+                }
+            });
+            thread.start();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     interface DeviceInfo

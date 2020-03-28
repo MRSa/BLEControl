@@ -111,6 +111,24 @@ public class FV100BleDeviceConnector implements FV100Finder.BleScanResult
         }
     }
 
+    public void setProperty(@NonNull String propertyName, @NonNull String propertyValue)
+    {
+        try
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            {
+                if (communicator != null)
+                {
+                    communicator.setProperty(propertyName, propertyValue);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void scanBleDevice(BluetoothManager btMgr, FV100Finder finder)

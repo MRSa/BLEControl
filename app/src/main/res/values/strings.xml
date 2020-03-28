@@ -45,4 +45,8 @@
     <string name="scan_fail_via_ble">BLE scan failure.</string>
     <string name="ble_scan_finished">SCAN FINISHED.</string>
     <string name="turn_on_wifi_is_failed">Turn on WIFI was failed.</string>
+    <string name="connect_wifi_failure">Connect Failure : </string>
+    <string name="try_to_connect_wifi">Try to connect : </string>
+    <string name="ble_not_connected">BLE is not connected.</string>
+    <string name="now_ble_communicating">Now communicating, please wait a while.</string>
 </resources>

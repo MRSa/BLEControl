@@ -42,6 +42,7 @@ class FV100SendMessageProvider
         this.tokenId = tokenId;
     }
 
+
     byte[] provideMessage()
     {
         byte[] messageToSend = createSendMessage(msgIdList.get(index), typeList.get(index), paramList.get(index));
@@ -82,10 +83,11 @@ class FV100SendMessageProvider
             {
                 index++;
                 offset = 0;
-                if (index > msgIdList.size())
+                if (index >= msgIdList.size())
                 {
                     index = 0;
                     isMessageFinished = true;
+                    Log.v(TAG, " - - - - - - -  STATUS GET SEQUENCE FINISHED  - - - - - - - ");
                 }
             }
         }
@@ -109,23 +111,23 @@ class FV100SendMessageProvider
         typeList = new ArrayList<>();
         paramList = new ArrayList<>();
 
-        msgIdList.add(257);    // {"msg_id":257,"token":0}
+        msgIdList.add(257);    // {"msg_id":257,"token":0}  INDEX : 0
         typeList.add(null);
         paramList.add(null);
 
-        msgIdList.add(18);     // {"msg_id":18,"token":1}
+        msgIdList.add(18);     // {"msg_id":18,"token":1}   INDEX : 1
         typeList.add(null);
         paramList.add(null);
 
-        msgIdList.add(17);     // {"msg_id":17,"token":1}
+        msgIdList.add(17);     // {"msg_id":17,"token":1}   INDEX : 2
         typeList.add(null);
         paramList.add(null);
 
-        msgIdList.add(5);      // {"msg_id":5,"token":1}
+        msgIdList.add(5);      // {"msg_id":5,"token":1}      INDEX : 3
         typeList.add(null);
         paramList.add(null);
 
-        msgIdList.add(11);     // {"msg_id":11,"token":1}
+        msgIdList.add(11);     // {"msg_id":11,"token":1}    INDEX : 4
         typeList.add(null);
         paramList.add(null);
 
@@ -133,7 +135,7 @@ class FV100SendMessageProvider
         //typeList.add("ap_mode");
         //paramList.add(null);
 
-        msgIdList.add(61441);  // {"msg_id":61441,"token":1}
+        msgIdList.add(61441);  // {"msg_id":61441,"token":1}  INDEX : 5
         typeList.add(null);
         paramList.add(null);
     }
@@ -143,11 +145,11 @@ class FV100SendMessageProvider
         String data = "{\"msg_id\":" + msg_id + ",\"token\":" + tokenId;
         if (type != null)
         {
-            data = data + ",\"type\":\"" + type + "\'";
+            data = data + ",\"type\":\"" + type + "\"";
         }
         if (param != null)
         {
-            data = data + ",\"param\":\"" + param + "\'";
+            data = data + ",\"param\":\"" + param + "\"";
         }
         data = data + "}";
 
@@ -164,5 +166,74 @@ class FV100SendMessageProvider
         }
         return (output.toByteArray());
     }
+
+
+    List<byte[]> provideSetPropertyMessage(@Nullable String type, @Nullable String param)
+    {
+        byte[] messageToSend = createSendMessage(2, type, param);
+        List<byte[]> messageArray = new ArrayList<>();
+        try
+        {
+            int addLength = 20;
+            int messageLength = messageToSend.length;
+            for (int offset = 0; offset < messageLength; offset = offset + addLength)
+            {
+                int targetLength = Math.min((offset + addLength), messageLength);
+                byte[] messageBlock = Arrays.copyOfRange(messageToSend, offset, targetLength);
+                ByteArrayOutputStream baosm = new ByteArrayOutputStream();
+                if (targetLength == messageLength)
+                {
+                    baosm.write((byte) 0x03);
+                }
+                else if (offset != 0)
+                {
+                    baosm.write((byte) 0x02);
+                }
+                else // if (offset == 0)
+                {
+                    addLength--;
+                    offset++;
+                }
+                baosm.write(messageBlock);
+                messageArray.add(baosm.toByteArray());
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return (messageArray);
+    }
+
+    private byte[] createSetPropertyMessage(@Nullable String type, @Nullable String param)
+    {
+        String data = "{\"msg_id\":" + 2;
+        if (param != null)
+        {
+            data = data + ",\"param\":\"" + param + "\"";
+        }
+        data = data + ",\"token\":" + tokenId;
+        if (type != null)
+        {
+            data = data + ",\"type\":\"" + type + "\"";
+        }
+        data = data + "}";
+
+        Log.v(TAG, " data to send : " + data);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try
+        {
+            byte[] header = {(byte) 0x01, (byte) 0x00, (byte) data.length()};
+            output.write(header);
+            output.write(data.getBytes());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return (output.toByteArray());
+    }
+
 
 }

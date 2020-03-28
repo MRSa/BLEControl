@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="photo_size">
+        <item >L [4:3]</item>
+        <item >L [1:1]</item>
+        <item >M [4:3]</item>
+        <item >M [1:1]</item>
+        <item >S [4:3]</item>
+        <item >S [1:1]</item>
+    </string-array>
+    <string-array name="photo_size_value">
+        <item >4160x3120 4:3</item>
+        <item >3104x3104 1:1</item>
+        <item >2944x2208 4:3</item>
+        <item >2208x2208 1:1</item>
+        <item >2080x1560 4:3</item>
+        <item >1568x1568 1:1</item>
+    </string-array>
+
+    <string-array name="video_size">
+        <item >1080p/60</item>
+        <item >1080p/30</item>
+        <item >720p/30</item>
+    </string-array>
+    <string-array name="video_size_value">
+        <item >1920x1080 60P 16:9</item>
+        <item >1920x1080 30P 16:9</item>
+        <item >1280x720 30P 16:9</item>
+    </string-array>
+</resources>

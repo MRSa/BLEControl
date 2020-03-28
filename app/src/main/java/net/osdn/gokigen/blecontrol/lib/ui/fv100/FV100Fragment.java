@@ -58,6 +58,7 @@ public class FV100Fragment extends Fragment implements FV100DeviceQuery.DeviceIn
                 // Device Query Button
                 final Button queryButton = root.findViewById(R.id.query_to_device);
                 FV100DeviceQuery deviceQuery = new FV100DeviceQuery(context, this, fv100ViewModel);
+                FV100PropertySetting propertySetting = new FV100PropertySetting(context, deviceQuery);
                 if (queryButton != null)
                 {
                     queryButton.setOnClickListener(deviceQuery);
@@ -72,9 +73,23 @@ public class FV100Fragment extends Fragment implements FV100DeviceQuery.DeviceIn
 
                 // WiFi Connect Button
                 final ImageButton wifiConnectButton = root.findViewById(R.id.wifi_connect_button);
-                if (reloadButton != null)
+                if (wifiConnectButton != null)
                 {
                     wifiConnectButton.setOnClickListener(deviceQuery);
+                }
+
+                // Change Image Size Button
+                final ImageButton imageSizeButton = root.findViewById(R.id.change_image_size_button);
+                if (imageSizeButton != null)
+                {
+                    imageSizeButton.setOnClickListener(propertySetting);
+                }
+
+                // Change Video size Button
+                final ImageButton videoSizeButton = root.findViewById(R.id.change_video_size_button);
+                if (videoSizeButton != null)
+                {
+                    videoSizeButton.setOnClickListener(propertySetting);
                 }
             }
         }

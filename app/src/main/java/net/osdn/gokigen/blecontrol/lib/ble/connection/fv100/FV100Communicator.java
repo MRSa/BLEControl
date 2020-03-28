@@ -15,11 +15,13 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 
+import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
 import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
 import net.osdn.gokigen.blecontrol.lib.wifi.WifiConnector;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -39,6 +41,9 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
     private BluetoothGatt btGatt = null;
     private String wifiSsId = null;
     private String wifiKey = null;
+
+    private List<byte[]> setPropertyMessage = null;
+    private int setPropertyMessageIndex = -1;
 
     FV100Communicator(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater, @NonNull SnackBarMessage messageToShow)
     {
@@ -128,6 +133,56 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
         }
     }
 
+    void setProperty(@NonNull String propertyName, @NonNull String propertyValue)
+    {
+        String message = "setProperty : " + propertyName + " " + propertyValue;
+        Log.v(TAG, message);
+        if (btGatt == null)
+        {
+            // BluetoothGatt が設定されていない場合...
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    messageToShow.showMessage(context.getString(R.string.ble_not_connected));
+                }
+            });
+            return;
+        }
+        if ((setPropertyMessage != null)||(!sendMessageProvider.isMessageFinished()))
+        {
+            // ただいま通信中なので何もしないで終わる
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    messageToShow.showMessage(context.getString(R.string.now_ble_communicating));
+                }
+            });
+            return;
+        }
+        addTextInformation(message);
+        setPropertyMessage = sendMessageProvider.provideSetPropertyMessage(propertyName, propertyValue);
+        Log.v(TAG, " - - - - -");
+        for (byte[] data : setPropertyMessage)
+        {
+            Log.v(TAG, " >> " + data.length);
+        }
+        Log.v(TAG, " - - - - -");
+        setPropertyMessageIndex = 0;
+        try
+        {
+            byte[] sendMessage = setPropertyMessage.get(setPropertyMessageIndex);
+            BluetoothGattService service = btGatt.getService(UUID.fromString("0000a108-0000-1000-8000-00805f9b34fb"));
+            BluetoothGattCharacteristic characteristicWrite = service.getCharacteristic(UUID.fromString("0000a155-0000-1000-8000-00805f9b34fb"));
+            characteristicWrite.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+            characteristicWrite.setValue(sendMessage);
+            btGatt.writeCharacteristic(characteristicWrite);
+            setPropertyMessageIndex++;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     private void communicateMain(@NonNull BluetoothDevice device)
     {
@@ -297,6 +352,31 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
                     characteristicWrite.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
                     characteristicWrite.setValue(sendMessage);
                     gatt.writeCharacteristic(characteristicWrite);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            else if ((setPropertyMessageIndex > 0)&&(setPropertyMessage != null))
+            {
+                try
+                {
+                    byte[] sendMessage = setPropertyMessage.get(setPropertyMessageIndex);
+                    BluetoothGattService service = gatt.getService(UUID.fromString("0000a108-0000-1000-8000-00805f9b34fb"));
+                    BluetoothGattCharacteristic characteristicWrite = service.getCharacteristic(UUID.fromString("0000a155-0000-1000-8000-00805f9b34fb"));
+                    characteristicWrite.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+                    characteristicWrite.setValue(sendMessage);
+                    gatt.writeCharacteristic(characteristicWrite);
+
+                    setPropertyMessageIndex++;
+                    if (setPropertyMessageIndex >= setPropertyMessage.size())
+                    {
+                        // メッセージ送信終了
+                        setPropertyMessageIndex = -1;
+                        setPropertyMessage = null;
+                        System.gc();
+                    }
                 }
                 catch (Exception e)
                 {

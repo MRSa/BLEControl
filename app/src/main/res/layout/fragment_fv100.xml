@@ -96,7 +96,7 @@
                 android:scaleType="fitCenter"
                 android:contentDescription="@string/blank"
                 app:srcCompat="@drawable/ic_image_aspect_ratio_black_24dp"
-                android:visibility="visible" />
+                android:visibility="invisible" />
 
             <ImageButton
                 android:id="@+id/change_video_size_button"
@@ -108,7 +108,7 @@
                 android:scaleType="fitCenter"
                 android:contentDescription="@string/blank"
                 app:srcCompat="@drawable/ic_videocam_black_24dp"
-                android:visibility="visible" />
+                android:visibility="invisible" />
 
             <ImageButton
                 android:id="@+id/dummy_button2"
@@ -132,7 +132,7 @@
                 android:scaleType="fitCenter"
                 android:contentDescription="@string/blank"
                 app:srcCompat="@drawable/ic_signal_wifi_4_bar_black_24dp"
-            android:visibility="visible" />
+            android:visibility="invisible" />
         </LinearLayout>
 
         <View

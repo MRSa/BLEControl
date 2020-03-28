@@ -2,6 +2,7 @@ package net.osdn.gokigen.blecontrol.lib.ble.connection.fv100;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.ByteArrayOutputStream;
@@ -12,6 +13,7 @@ import java.util.List;
 class FV100SendMessageProvider
 {
     private final String TAG = toString();
+    private final MessageSequenceNotify notifier;
     private List<Integer> msgIdList;
     private List<String> typeList;
     private List<String> paramList;
@@ -19,13 +21,11 @@ class FV100SendMessageProvider
     private int tokenId = 0;
     private int index = 0;
     private int offset = 0;
-
-    private int sequene = 0;
     private boolean isMessageFinished = false;
 
-
-    FV100SendMessageProvider()
+    FV100SendMessageProvider(@NonNull MessageSequenceNotify notifier)
     {
+        this.notifier = notifier;
         initializeMsgIdList();
     }
 
@@ -34,6 +34,7 @@ class FV100SendMessageProvider
         index = 0;
         offset = 0;
         isMessageFinished = false;
+        notifier.messageFinished(false);
     }
 
     void setTokenId(int tokenId)
@@ -87,6 +88,7 @@ class FV100SendMessageProvider
                 {
                     index = 0;
                     isMessageFinished = true;
+                    notifier.messageFinished(true);
                     Log.v(TAG, " - - - - - - -  STATUS GET SEQUENCE FINISHED  - - - - - - - ");
                 }
             }
@@ -100,9 +102,9 @@ class FV100SendMessageProvider
         return (message);
     }
 
-    boolean isMessageFinished()
+    boolean isMessageSending()
     {
-        return (isMessageFinished);
+        return (!isMessageFinished);
     }
 
     private void initializeMsgIdList()
@@ -205,35 +207,8 @@ class FV100SendMessageProvider
         return (messageArray);
     }
 
-    private byte[] createSetPropertyMessage(@Nullable String type, @Nullable String param)
+    public interface MessageSequenceNotify
     {
-        String data = "{\"msg_id\":" + 2;
-        if (param != null)
-        {
-            data = data + ",\"param\":\"" + param + "\"";
-        }
-        data = data + ",\"token\":" + tokenId;
-        if (type != null)
-        {
-            data = data + ",\"type\":\"" + type + "\"";
-        }
-        data = data + "}";
-
-        Log.v(TAG, " data to send : " + data);
-
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try
-        {
-            byte[] header = {(byte) 0x01, (byte) 0x00, (byte) data.length()};
-            output.write(header);
-            output.write(data.getBytes());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return (output.toByteArray());
+        void messageFinished(boolean isFinished);
     }
-
-
 }

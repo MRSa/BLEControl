@@ -2,6 +2,7 @@ package net.osdn.gokigen.blecontrol.lib.ui.fv100;
 
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
@@ -119,6 +120,44 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater,
     public void addText(String data)
     {
         viewModel.addText(data);
+    }
+
+    @Override
+    public void enableOperation(final boolean isEnable)
+    {
+        try
+        {
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    final ImageButton wifiConnectButton = context.findViewById(R.id.wifi_connect_button);
+                    if (wifiConnectButton != null)
+                    {
+                        wifiConnectButton.setEnabled(isEnable);
+                        wifiConnectButton.setVisibility((isEnable? View.VISIBLE : View.INVISIBLE));
+                    }
+
+                    final ImageButton imageSizeButton = context.findViewById(R.id.change_image_size_button);
+                    if (imageSizeButton != null)
+                    {
+                        imageSizeButton.setEnabled(isEnable);
+                        imageSizeButton.setVisibility((isEnable? View.VISIBLE : View.INVISIBLE));
+                    }
+
+                    final ImageButton videoSizeButton = context.findViewById(R.id.change_video_size_button);
+                    if (videoSizeButton != null)
+                    {
+                        videoSizeButton.setEnabled(isEnable);
+                        videoSizeButton.setVisibility((isEnable? View.VISIBLE : View.INVISIBLE));
+                    }
+                    //Log.v(TAG, " >> ITextDataUpdater::enableOperation() : " + isEnable);
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override

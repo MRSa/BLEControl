@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPaser.ReceivedDataNotify, WifiConnector.WifiConnectNotify
+class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPaser.ReceivedDataNotify, WifiConnector.WifiConnectNotify, FV100SendMessageProvider.MessageSequenceNotify
 {
     private String TAG = toString();
     private final FragmentActivity context;
@@ -52,7 +52,7 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
         this.messageToShow = messageToShow;
         this.receiveBuffer = new ByteArrayOutputStream();
         this.objectParser = new FV100ObjectPaser(this);
-        this.sendMessageProvider = new FV100SendMessageProvider();
+        this.sendMessageProvider = new FV100SendMessageProvider(this);
         this.wifiConnector = new WifiConnector(context, messageToShow);
     }
 
@@ -148,7 +148,7 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
             });
             return;
         }
-        if ((setPropertyMessage != null)||(!sendMessageProvider.isMessageFinished()))
+        if ((setPropertyMessage != null)||(sendMessageProvider.isMessageSending()))
         {
             // ただいま通信中なので何もしないで終わる
             context.runOnUiThread(new Runnable() {
@@ -336,7 +336,7 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
             String value = characteristic.getStringValue(0);
             Log.v(TAG, " W: BluetoothGatt.GATT_SUCCESS " + characteristic.getUuid() + "  (" + value + ") ");
 
-            if (!sendMessageProvider.isMessageFinished())
+            if (sendMessageProvider.isMessageSending())
             {
                 try
                 {
@@ -457,6 +457,12 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
 
     }
 
+    @Override
+    public void messageFinished(boolean isFinished)
+    {
+        dataUpdater.enableOperation(isFinished);
+    }
+
 /*
     @Override
     public void onMtuChanged(BluetoothGatt gatt, int mtu, int status)
@@ -490,5 +496,4 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
         }
     }
 */
-
 }

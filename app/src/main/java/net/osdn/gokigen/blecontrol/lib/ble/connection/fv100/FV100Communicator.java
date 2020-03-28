@@ -135,7 +135,7 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
 
     void setProperty(@NonNull String propertyName, @NonNull String propertyValue)
     {
-        String message = "setProperty : " + propertyName + " " + propertyValue;
+        String message = " " + propertyName + " : " + propertyValue;
         Log.v(TAG, message);
         if (btGatt == null)
         {
@@ -161,12 +161,6 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
         }
         addTextInformation(message);
         setPropertyMessage = sendMessageProvider.provideSetPropertyMessage(propertyName, propertyValue);
-        Log.v(TAG, " - - - - -");
-        for (byte[] data : setPropertyMessage)
-        {
-            Log.v(TAG, " >> " + data.length);
-        }
-        Log.v(TAG, " - - - - -");
         setPropertyMessageIndex = 0;
         try
         {

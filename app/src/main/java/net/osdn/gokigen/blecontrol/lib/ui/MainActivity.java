@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) ||
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED) ||
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE) != PackageManager.PERMISSION_GRANTED) ||
+                    (ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) ||
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) ||
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)) {
                 ActivityCompat.requestPermissions(this,
@@ -134,6 +135,7 @@ public class MainActivity extends AppCompatActivity
                                 Manifest.permission.ACCESS_NETWORK_STATE,
                                 Manifest.permission.ACCESS_WIFI_STATE,
                                 Manifest.permission.CHANGE_WIFI_STATE,
+                                Manifest.permission.CHANGE_NETWORK_STATE,
                                 Manifest.permission.VIBRATE,
                                 Manifest.permission.INTERNET,
                         },

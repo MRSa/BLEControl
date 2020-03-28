@@ -5,14 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 
 import net.osdn.gokigen.blecontrol.lib.ble.R;
@@ -112,7 +117,7 @@ public class WifiConnector
             else
             {
                 // API LEVEL >= 29
-                connectToWifiNewerVersion();
+                connectToWifiNewerVersion(wifiSsId, wifiKey, callback);
             }
         }
         catch (Exception e)
@@ -123,6 +128,7 @@ public class WifiConnector
 
     private void connectToWifiOlderVersion(@Nullable WifiManager wifi, @NonNull String wifiSsId, @NonNull String wifiKey, @NonNull WifiConnectNotify callback)
     {
+        boolean isConnect = false;
         try
         {
             if (wifi == null)
@@ -175,8 +181,7 @@ public class WifiConnector
                 {
                     wifi.enableNetwork(config.networkId, false);
                 }
-
-                // WIFIを接続するにする
+                // WIFIを接続する
                 wifi.enableNetwork(networkId, true);
             }
             else
@@ -187,17 +192,44 @@ public class WifiConnector
                 return;
             }
             messageToShow.showMessage(context.getString(R.string.try_to_connect_wifi) + " " + ssId);
+            isConnect = true;
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
+        callback.onWifiConnected(isConnect);
     }
 
-    private void connectToWifiNewerVersion()
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private void connectToWifiNewerVersion( @NonNull String wifiSsId, @NonNull String wifiKey, @NonNull WifiConnectNotify callback)
     {
+        Log.v(TAG, "connectToWifiNewerVersion() : " + wifiSsId + "  " + wifiKey);
+        try
+        {
+            WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
+            builder.setSsid(wifiSsId);
+            builder.setIsHiddenSsid(true);
+            builder.setWpa2Passphrase(wifiKey);
+            WifiNetworkSpecifier specifier = builder.build();
 
+            NetworkRequest.Builder requestbuilder = new NetworkRequest.Builder();
+            //requestbuilder.removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+            requestbuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+            requestbuilder.setNetworkSpecifier(specifier);
 
+            final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (connectivityManager != null)
+            {
+                final ConnectivityManager.NetworkCallback networkCallback = new WiFiCallback();
+                connectivityManager.requestNetwork(requestbuilder.build(), networkCallback);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private void turnOnWiFi(@Nullable WifiManager wifi)
@@ -247,6 +279,33 @@ public class WifiConnector
             e.printStackTrace();
         }
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private class WiFiCallback extends ConnectivityManager.NetworkCallback
+    {
+
+        WiFiCallback()
+        {
+
+        }
+
+        @Override
+        public void onAvailable(Network network)
+        {
+            Log.v(TAG, "onAvailable " + network.toString());
+
+        }
+
+        @Override
+        public void onLost(Network network)
+        {
+            Log.v(TAG, "onLost " + network.toString());
+
+
+        }
+
+    }
+
 
     public interface WifiConnectNotify
     {

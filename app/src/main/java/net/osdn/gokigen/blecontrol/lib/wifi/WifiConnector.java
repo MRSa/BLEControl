@@ -143,10 +143,17 @@ public class WifiConnector
                 {
                     // すでにネットワークが設定済
                     Log.v(TAG, " FOUND SSID : " + ssId);
+                    boolean ret = wifi.removeNetwork(config.networkId);
+                    if (ret)
+                    {
+                        Log.v(TAG, " NETWORK IS REMOVED. : " + config.SSID);
+                        targetConfiguration = null;
+                        break;
+                    }
                     config.preSharedKey = key;
                     networkId = config.networkId;
                     targetConfiguration = config;
-
+                    break;
                 }
             }
             if (targetConfiguration == null)
@@ -159,9 +166,17 @@ public class WifiConnector
                 targetConfiguration.hiddenSSID = true;
                 networkId = wifi.addNetwork(targetConfiguration);
             }
+
+            // ネットワークIDが取得できた場合、、、
             if (networkId != -1)
             {
-                // ネットワークIDが取得できた。有効に。
+                // いったん WIFIを無効化してから...
+                for (WifiConfiguration config : wifi.getConfiguredNetworks())
+                {
+                    wifi.enableNetwork(config.networkId, false);
+                }
+
+                // WIFIを接続するにする
                 wifi.enableNetwork(networkId, true);
             }
             else

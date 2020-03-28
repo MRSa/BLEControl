@@ -93,7 +93,7 @@ public class FV100PropertySetting implements View.OnClickListener
         try
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle(context.getString(R.string.select_image_size));
+            builder.setTitle(context.getString(R.string.select_video_resolution));
             builder.setCancelable(true);
             builder.setSingleChoiceItems(R.array.video_size, -1, new DialogInterface.OnClickListener() {
                 @Override

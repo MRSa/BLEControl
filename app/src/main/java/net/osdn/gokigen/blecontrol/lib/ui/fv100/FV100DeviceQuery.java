@@ -134,7 +134,7 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater,
                     if (wifiConnectButton != null)
                     {
                         wifiConnectButton.setEnabled(isEnable);
-                        wifiConnectButton.setVisibility((isEnable? View.INVISIBLE : View.INVISIBLE));
+                        wifiConnectButton.setVisibility((isEnable? View.VISIBLE : View.INVISIBLE));
                     }
 
                     final ImageButton imageSizeButton = context.findViewById(R.id.change_image_size_button);

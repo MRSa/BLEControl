@@ -22,7 +22,7 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 
 import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,14 +33,14 @@ public class WifiConnector
 {
     private String TAG = toString();
 
-    private final SnackBarMessage messageToShow;
+    private final ITextDataUpdater dataUpdater;
     private final FragmentActivity context;
     private final BroadcastReceiver connectionReceiver;
 
-    public WifiConnector(@NonNull FragmentActivity context, @NonNull SnackBarMessage messageToShow)
+    public WifiConnector(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
     {
         this.context = context;
-        this.messageToShow = messageToShow;
+        this.dataUpdater = dataUpdater;
         connectionReceiver = new BroadcastReceiver()
         {
             @Override
@@ -190,11 +190,11 @@ public class WifiConnector
             else
             {
                 // 接続に失敗した
-                messageToShow.showMessage(context.getString(R.string.connect_wifi_failure) + " " + ssId);
+                dataUpdater.showSnackBar(context.getString(R.string.connect_wifi_failure) + " " + ssId);
                 callback.onWifiConnected(false);
                 return;
             }
-            messageToShow.showMessage(context.getString(R.string.try_to_connect_wifi) + " " + ssId);
+            dataUpdater.showSnackBar(context.getString(R.string.try_to_connect_wifi) + " " + ssId);
             isConnect = true;
         }
         catch (Exception e)
@@ -211,7 +211,7 @@ public class WifiConnector
         Log.v(TAG, "connectToWifiNewerVersion() : '" + wifiSsId + "' [" + wifiKey + "]");
         try
         {
-            turnOffWifieNewerVersion(wifiSsId, wifiKey);
+            turnOffWifiNewerVersion(wifiSsId, wifiKey);
 
             WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
             builder.setSsid(wifiSsId);
@@ -238,7 +238,7 @@ public class WifiConnector
     }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
-    private void turnOffWifieNewerVersion(@NonNull String wifiSsId, @NonNull String wifiKey)
+    private void turnOffWifiNewerVersion(@NonNull String wifiSsId, @NonNull String wifiKey)
     {
         try
         {
@@ -258,7 +258,7 @@ public class WifiConnector
 
             WifiNetworkSuggestion.Builder builder = new WifiNetworkSuggestion.Builder();
             builder.setSsid(wifiSsId);
-            //builder.setWpa2Passphrase(wifiKey);
+            builder.setWpa2Passphrase(wifiKey);
             WifiNetworkSuggestion suggestion = builder.build();
             List<WifiNetworkSuggestion> list = new ArrayList<>();
             list.add(suggestion);
@@ -283,7 +283,7 @@ public class WifiConnector
                 // WiFi を ON にする (たぶん失敗する...)
                 if (!wifi.setWifiEnabled(true))
                 {
-                    messageToShow.showMessage(R.string.turn_on_wifi_is_failed);
+                    dataUpdater.showSnackBar(R.string.turn_on_wifi_is_failed);
                 }
             }
             catch (Exception e)

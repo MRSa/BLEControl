@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentActivity;
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.fv100.FV100BleDeviceConnector;
+import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
 
 public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater, FV100PropertySetting.PropertySetter
 {
@@ -18,6 +19,7 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater,
     private final DeviceInfo deviceInfo;
     private final FV100ViewModel viewModel;
     private final FV100BleDeviceConnector deviceConnector;
+    private final SnackBarMessage messageToShow;
 
     FV100DeviceQuery(@NonNull FragmentActivity context, @NonNull DeviceInfo deviceInfo, @NonNull FV100ViewModel viewModel)
     {
@@ -25,6 +27,7 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater,
         this.deviceInfo = deviceInfo;
         this.viewModel = viewModel;
         this.deviceConnector = new FV100BleDeviceConnector(context, this);
+        this.messageToShow = new SnackBarMessage(context, false);
     }
 
     private void deviceQuery()
@@ -120,6 +123,18 @@ public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater,
     public void addText(String data)
     {
         viewModel.addText(data);
+    }
+
+    @Override
+    public void showSnackBar(String message)
+    {
+        messageToShow.showMessage(message);
+    }
+
+    @Override
+    public void showSnackBar(int rscId)
+    {
+        messageToShow.showMessage(rscId);
     }
 
     @Override

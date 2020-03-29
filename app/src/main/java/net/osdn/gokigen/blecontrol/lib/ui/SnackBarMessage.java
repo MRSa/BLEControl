@@ -19,8 +19,7 @@ public class SnackBarMessage
     public SnackBarMessage(@NonNull FragmentActivity context, boolean isToast)
     {
         this.context = context;
-        this.isToast = false;
-
+        this.isToast = isToast;
     }
 
     public void showMessage(final String message)

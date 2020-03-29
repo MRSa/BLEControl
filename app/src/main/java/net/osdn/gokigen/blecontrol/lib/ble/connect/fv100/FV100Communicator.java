@@ -17,7 +17,6 @@ import androidx.fragment.app.FragmentActivity;
 
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
-import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
 import net.osdn.gokigen.blecontrol.lib.wifi.WifiConnector;
 
 import java.io.ByteArrayOutputStream;
@@ -30,7 +29,6 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
     private String TAG = toString();
     private final FragmentActivity context;
     private final ITextDataUpdater dataUpdater;
-    private final SnackBarMessage messageToShow;
     //private boolean mtuSizeIsExpanded = false;
     private boolean startQuery = false;
     private boolean onConnected = false;
@@ -45,15 +43,14 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
     private List<byte[]> setPropertyMessage = null;
     private int setPropertyMessageIndex = -1;
 
-    FV100Communicator(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater, @NonNull SnackBarMessage messageToShow)
+    FV100Communicator(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
     {
         this.context = context;
         this.dataUpdater = dataUpdater;
-        this.messageToShow = messageToShow;
         this.receiveBuffer = new ByteArrayOutputStream();
         this.objectParser = new FV100ObjectPaser(this);
         this.sendMessageProvider = new FV100SendMessageProvider(this);
-        this.wifiConnector = new WifiConnector(context, messageToShow);
+        this.wifiConnector = new WifiConnector(context, dataUpdater);
     }
 
     void startCommunicate(@Nullable final BluetoothDevice device)
@@ -143,7 +140,7 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    messageToShow.showMessage(context.getString(R.string.ble_not_connected));
+                    dataUpdater.showSnackBar(context.getString(R.string.ble_not_connected));
                 }
             });
             return;
@@ -154,7 +151,7 @@ class FV100Communicator  extends BluetoothGattCallback implements FV100ObjectPas
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    messageToShow.showMessage(context.getString(R.string.now_ble_communicating));
+                    dataUpdater.showSnackBar(context.getString(R.string.now_ble_communicating));
                 }
             });
             return;

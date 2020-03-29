@@ -12,6 +12,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
+import android.net.wifi.WifiNetworkSuggestion;
 import android.os.Build;
 import android.util.Log;
 
@@ -23,6 +24,7 @@ import androidx.fragment.app.FragmentActivity;
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Context.WIFI_SERVICE;
@@ -58,12 +60,13 @@ public class WifiConnector
             // Log.v(TAG, "intent.getAction() : null");
             return;
         }
+/*
         if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
         {
             // 不要な Broadcastだった。抜ける。
             return;
         }
-
+*/
         try
         {
             Log.v(TAG, "onReceiveBroadcastOfConnection() : CONNECTIVITY_ACTION");
@@ -203,11 +206,13 @@ public class WifiConnector
 
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
-    private void connectToWifiNewerVersion( @NonNull String wifiSsId, @NonNull String wifiKey, @NonNull WifiConnectNotify callback)
+    private void connectToWifiNewerVersion(@NonNull String wifiSsId, @NonNull String wifiKey, @NonNull WifiConnectNotify callback)
     {
-        Log.v(TAG, "connectToWifiNewerVersion() : " + wifiSsId + "  " + wifiKey);
+        Log.v(TAG, "connectToWifiNewerVersion() : '" + wifiSsId + "' [" + wifiKey + "]");
         try
         {
+            turnOffWifieNewerVersion(wifiSsId, wifiKey);
+
             WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
             builder.setSsid(wifiSsId);
             builder.setIsHiddenSsid(true);
@@ -222,8 +227,45 @@ public class WifiConnector
             final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             if (connectivityManager != null)
             {
-                final ConnectivityManager.NetworkCallback networkCallback = new WiFiCallback();
+                final ConnectivityManager.NetworkCallback networkCallback = new WiFiCallback(callback);
                 connectivityManager.requestNetwork(requestbuilder.build(), networkCallback);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private void turnOffWifieNewerVersion(@NonNull String wifiSsId, @NonNull String wifiKey)
+    {
+        try
+        {
+
+            final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (connectivityManager != null)
+            {
+                Network currentNetwork = connectivityManager.getActiveNetwork();
+                if (currentNetwork == null)
+                {
+                    // network is not active.
+                    return;
+                }
+                //final ConnectivityManager.NetworkCallback networkCallback = new WiFiCallback(callback);
+                //connectivityManager.requestNetwork(requestbuilder.build(), networkCallback);
+            }
+
+            WifiNetworkSuggestion.Builder builder = new WifiNetworkSuggestion.Builder();
+            builder.setSsid(wifiSsId);
+            //builder.setWpa2Passphrase(wifiKey);
+            WifiNetworkSuggestion suggestion = builder.build();
+            List<WifiNetworkSuggestion> list = new ArrayList<>();
+            list.add(suggestion);
+            WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wifiManager != null)
+            {
+                wifiManager.removeNetworkSuggestions(list);
             }
         }
         catch (Exception e)
@@ -256,9 +298,13 @@ public class WifiConnector
         Log.v(TAG, "startWatchWifiStatus()");
         try
         {
-            IntentFilter filter = new IntentFilter();
+            final IntentFilter filter = new IntentFilter();
             filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
             filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            {
+                filter.addAction(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION);
+            }
             context.getApplicationContext().registerReceiver(connectionReceiver, filter);
         }
         catch (Exception e)
@@ -284,15 +330,17 @@ public class WifiConnector
     private class WiFiCallback extends ConnectivityManager.NetworkCallback
     {
 
-        WiFiCallback()
+        private WifiConnectNotify callback;
+        WiFiCallback(@NonNull WifiConnectNotify callback)
         {
-
+            this.callback = callback;
         }
 
         @Override
         public void onAvailable(Network network)
         {
             Log.v(TAG, "onAvailable " + network.toString());
+            callback.onWifiConnected(true);
 
         }
 
@@ -300,10 +348,8 @@ public class WifiConnector
         public void onLost(Network network)
         {
             Log.v(TAG, "onLost " + network.toString());
-
-
+            callback.onWifiConnected(false);
         }
-
     }
 
 

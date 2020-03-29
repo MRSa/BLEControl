@@ -1,4 +1,4 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connection.fv100;
+package net.osdn.gokigen.blecontrol.lib.ble.connect.fv100;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -16,7 +16,7 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 
 import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
 import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
 import net.osdn.gokigen.blecontrol.lib.wifi.WifiConnector;
 

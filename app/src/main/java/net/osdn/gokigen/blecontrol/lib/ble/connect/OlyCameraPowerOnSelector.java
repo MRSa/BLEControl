@@ -1,16 +1,8 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connection;
+package net.osdn.gokigen.blecontrol.lib.ble.connect;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
-import android.content.SharedPreferences;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
-
-import net.osdn.gokigen.blecontrol.lib.ble.R;
 
 /**
  *   Olympus AIR の Bluetooth設定を記録する

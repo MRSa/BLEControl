@@ -11,9 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.ble.connection.ICameraBleProperty;
-import net.osdn.gokigen.blecontrol.lib.ble.connection.ICameraPowerOn;
-import net.osdn.gokigen.blecontrol.lib.ble.connection.PowerOnCamera;
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ICameraBleProperty;
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ICameraPowerOn;
+import net.osdn.gokigen.blecontrol.lib.ble.connect.PowerOnCamera;
 
 import java.text.DateFormat;
 import java.util.Date;

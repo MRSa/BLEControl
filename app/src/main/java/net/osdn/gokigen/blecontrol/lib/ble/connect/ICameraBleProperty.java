@@ -1,4 +1,4 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connection;
+package net.osdn.gokigen.blecontrol.lib.ble.connect;
 
 /**
  *  Bluetooth のプロパティにアクセスするインタフェース

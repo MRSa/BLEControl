@@ -1,4 +1,4 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connection.fv100;
+package net.osdn.gokigen.blecontrol.lib.ble.connect.fv100;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

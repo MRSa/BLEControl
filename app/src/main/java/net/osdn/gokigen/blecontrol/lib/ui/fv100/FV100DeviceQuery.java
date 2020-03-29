@@ -8,8 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.ble.connection.ITextDataUpdater;
-import net.osdn.gokigen.blecontrol.lib.ble.connection.fv100.FV100BleDeviceConnector;
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
+import net.osdn.gokigen.blecontrol.lib.ble.connect.fv100.FV100BleDeviceConnector;
 
 public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater, FV100PropertySetting.PropertySetter
 {

@@ -18,10 +18,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="net.osdn.gokigen.blecontrol.lib.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        android:id="@+id/nav_brainwave"
+        android:name="net.osdn.gokigen.blecontrol.lib.ui.brainwave.BrainwaveMobileFragment"
+        android:label="@string/menu_eeg"
+        tools:layout="@layout/fragment_brainwave" />
 
     <fragment
         android:id="@+id/nav_slideshow"

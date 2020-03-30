@@ -1,6 +1,7 @@
 <resources>
     <string name="blank"> </string>
     <string name="app_name">FV-100 CHECKER</string>
+    <string name="app_name2">BLEControl</string>
     <string name="nav_header_title">FV-100 CHECKER</string>
     <string name="nav_header_subtitle"> </string>
     <string name="nav_header_desc">Navigation header</string>

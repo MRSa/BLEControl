@@ -1,99 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <TextView
-        android:id="@+id/label_device"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_gravity="start"
-        android:textAlignment="textStart"
-        android:text="@string/label_device"
-        android:textSize="12sp" />
-
-    <Spinner
-        android:id="@+id/spinner_selection_eeg_device"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/blank"
-        android:textSize="8pt"
-        android:visibility="visible" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="6dp" />
-
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="6dp">
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <Button
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/label_device"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:tag="button"
-            android:id="@+id/connect_to_eeg"
-            android:text="@string/connect_device"
-            android:layout_gravity="center"
-            android:textSize="8pt" />
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_gravity="start"
+            android:textAlignment="textStart"
+            android:text="@string/label_device"
+            android:textSize="12sp" />
 
-        <ImageButton
-            android:id="@+id/dummy_button0"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:clickable="true"
-            android:focusable="true"
+        <Spinner
+            android:id="@+id/spinner_selection_eeg_device"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/blank"
+            android:textSize="8pt"
+            android:visibility="visible" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="6dp" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="6dp">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:tag="button"
+                android:id="@+id/connect_to_eeg"
+                android:text="@string/connect_device"
+                android:layout_gravity="center"
+                android:textSize="8pt" />
+
+            <ImageButton
+                android:id="@+id/dummy_button0"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/blank"
+                app:srcCompat="@drawable/ic_replay_black_24dp"
+                android:visibility="invisible" />
+
+            <ImageButton
+                android:id="@+id/dummy_button1"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/blank"
+                app:srcCompat="@drawable/ic_texture_black_24dp"
+                android:visibility="invisible" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="6dp" />
+
+        <view
+            android:id="@+id/cameraLiveImageView"
+            class="net.osdn.gokigen.blecontrol.lib.ui.brainwave.BrainwaveRawGraphView"
+            android:layout_width="fill_parent"
+            android:layout_height="0dip"
+            android:layout_weight="1"
             android:gravity="center"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/blank"
-            app:srcCompat="@drawable/ic_replay_black_24dp"
-            android:visibility="invisible" />
+            android:visibility="visible" />
 
-        <ImageButton
-            android:id="@+id/dummy_button1"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:scaleType="fitCenter"
-            android:contentDescription="@string/blank"
-            app:srcCompat="@drawable/ic_texture_black_24dp"
-            android:visibility="invisible" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="6dp" />
+
+        <TextView
+            android:id="@+id/text_brainwave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_gravity="start"
+            android:textAlignment="textStart"
+            android:textIsSelectable="true"
+            android:scrollbars="vertical"
+            android:textSize="20sp"
+            />
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="6dp" />
-
-    <TextView
-        android:id="@+id/text_brainwave"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_gravity="start"
-        android:textAlignment="textStart"
-        android:textIsSelectable="true"
-        android:scrollbars="vertical"
-        android:textSize="20sp"
-        />
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

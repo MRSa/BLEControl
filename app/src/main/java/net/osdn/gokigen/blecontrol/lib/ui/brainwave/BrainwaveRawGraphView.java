@@ -8,9 +8,12 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-public class BrainwaveRawGraphView extends View
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveDataHolder;
+
+public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
 {
     private final String TAG = this.toString();
+    private BrainwaveDataHolder dataHolder = null;
 
     public BrainwaveRawGraphView(@NonNull Context context)
     {
@@ -50,8 +53,11 @@ public class BrainwaveRawGraphView extends View
 
         // Show Message(Overwrite)
         drawInformationMessages(canvas);
+    }
 
-
+    public void setDataHolder(BrainwaveDataHolder dataHolder)
+    {
+        this.dataHolder = dataHolder;
     }
 
 
@@ -61,6 +67,8 @@ public class BrainwaveRawGraphView extends View
         //int centerY = canvas.getHeight() / 2;
 
         Log.v(TAG, " Canvas SIZE : (" + canvas.getWidth() + "," + canvas.getHeight() +" )");
+
+        int rangeHeight = canvas.getHeight();
 
         // Clears the canvas.
         canvas.drawARGB(255, 0, 0, 0);
@@ -75,5 +83,10 @@ public class BrainwaveRawGraphView extends View
 
     }
 
+    @Override
+    public void drawGraph()
+    {
+        postInvalidate();
+    }
 }
 

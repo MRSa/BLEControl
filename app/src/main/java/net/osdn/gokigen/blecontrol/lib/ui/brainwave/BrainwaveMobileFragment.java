@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import net.osdn.gokigen.blecontrol.lib.ble.MyBleAdapter;
 import net.osdn.gokigen.blecontrol.lib.ble.R;
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveDataHolder;
 
 import java.util.List;
 
@@ -28,12 +29,16 @@ public class BrainwaveMobileFragment extends Fragment implements BrainwaveConnec
 {
     private final String TAG = toString();
     private List<String> bondedDeviceList = null;
+    private BrainwaveDataHolder dataHolder = null;
     private int selectedDevicePosition = 0;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         final BrainwaveMobileViewModel brainwaveViewModel = ViewModelProviders.of(this).get(BrainwaveMobileViewModel.class);
         View root = inflater.inflate(R.layout.fragment_brainwave, container, false);
+        final BrainwaveRawGraphView cameraLiveImageView = root.findViewById(R.id.cameraLiveImageView);
+        dataHolder = new BrainwaveDataHolder(cameraLiveImageView);
+        cameraLiveImageView.setDataHolder(dataHolder);
         final TextView textView = root.findViewById(R.id.text_brainwave);
         brainwaveViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
@@ -50,7 +55,7 @@ public class BrainwaveMobileFragment extends Fragment implements BrainwaveConnec
                 prepareDeviceSelection(context, root);
 
                 // Connect Button
-                final BrainwaveConnection eegConnection = new BrainwaveConnection(context, this, brainwaveViewModel);
+                final BrainwaveConnection eegConnection = new BrainwaveConnection(context, this, brainwaveViewModel, dataHolder);
                 final Button queryButton = root.findViewById(R.id.connect_to_eeg);
                 if (queryButton != null)
                 {

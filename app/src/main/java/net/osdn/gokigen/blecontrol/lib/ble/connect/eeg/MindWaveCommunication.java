@@ -12,6 +12,7 @@ import net.osdn.gokigen.blecontrol.lib.SimpleLogDumper;
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.BleDeviceFinder;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.IBrainwaveDataReceiver;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -24,13 +25,15 @@ public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
 
     private final FragmentActivity context;
     private final ITextDataUpdater dataUpdater;
+    private final IBrainwaveDataReceiver dataReceiver;
     private BleDeviceFinder deviceFinder = null;
     private boolean foundDevice = false;
 
-    public MindWaveCommunication(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
+    public MindWaveCommunication(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater, @NonNull IBrainwaveDataReceiver dataReceiver)
     {
         this.context = context;
         this.dataUpdater = dataUpdater;
+        this.dataReceiver = dataReceiver;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
         {
             this.deviceFinder = new BleDeviceFinder(context, dataUpdater, this);

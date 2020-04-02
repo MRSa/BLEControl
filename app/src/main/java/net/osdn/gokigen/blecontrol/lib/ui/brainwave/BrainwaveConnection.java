@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentActivity;
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.eeg.MindWaveCommunication;
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.IBrainwaveDataReceiver;
 import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
 
 public class BrainwaveConnection implements View.OnClickListener, ITextDataUpdater
@@ -22,12 +23,12 @@ public class BrainwaveConnection implements View.OnClickListener, ITextDataUpdat
     private final MindWaveCommunication communicator;
     private final SnackBarMessage messageToShow;
 
-    BrainwaveConnection(@NonNull FragmentActivity context, @NonNull SelectDevice deviceSelection, @NonNull BrainwaveMobileViewModel viewModel)
+    BrainwaveConnection(@NonNull FragmentActivity context, @NonNull SelectDevice deviceSelection, @NonNull BrainwaveMobileViewModel viewModel, @NonNull IBrainwaveDataReceiver dataReceiver)
     {
         this.context = context;
         this.deviceSelection = deviceSelection;
         this.viewModel = viewModel;
-        this.communicator = new MindWaveCommunication(context, this);
+        this.communicator = new MindWaveCommunication(context, this, dataReceiver);
         this.messageToShow = new SnackBarMessage(context, false);
     }
 

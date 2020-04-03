@@ -98,7 +98,17 @@ public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
                 return;
             }
 
-            SimpleLogDumper.dump_bytes("RECV SPP : ", data);
+            if ((data.length == 8)||(data.length == 9))
+            {
+                int value = ((data[5] & 0xff) * 256) + (data[6] & 0xff);
+                if (value > 32768)
+                {
+                    value = value - 65536;
+                }
+                dataReceiver.receivedRawData(value);
+                return;
+            }
+            SimpleLogDumper.dump_bytes("RECV SPP [" + data.length + "] ", data);
         }
         catch (Exception e)
         {
@@ -175,6 +185,12 @@ public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
     {
         try
         {
+            if (foundDevice)
+            {
+                // すでに見つかっている
+                Log.v(TAG, " ALREADY FIND.");
+                return;
+            }
             foundDevice = true;
             final BluetoothSocket btSocket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
             Thread thread = new Thread(new Runnable() {

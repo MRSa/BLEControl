@@ -2,6 +2,8 @@ package net.osdn.gokigen.blecontrol.lib.ui.brainwave;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -37,7 +39,7 @@ public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
     {
         try
         {
-
+            Log.v(TAG, " initialize.");
         }
         catch (Exception e)
         {
@@ -63,15 +65,26 @@ public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
 
     private void drawCanvas(Canvas canvas)
     {
-        //int centerX = canvas.getWidth() / 2;
-        //int centerY = canvas.getHeight() / 2;
+        int centerX = canvas.getWidth() / 2;
+        int centerY = canvas.getHeight() / 2;
 
         Log.v(TAG, " Canvas SIZE : (" + canvas.getWidth() + "," + canvas.getHeight() +" )");
 
         int rangeHeight = canvas.getHeight();
+        int rangeWidth = canvas.getWidth();
 
         // Clears the canvas.
         canvas.drawARGB(255, 0, 0, 0);
+
+        // 背景真ん中のライン
+        Paint bgLine = new Paint();
+        bgLine.setColor(Color.DKGRAY);
+        canvas.drawLine(0, centerY, rangeWidth, centerY, bgLine);
+
+
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        canvas.drawText("[" + dataHolder.getValue() + "]", centerX, centerY, paint);
     }
 
 
@@ -80,6 +93,9 @@ public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
      */
     private void drawInformationMessages(Canvas canvas)
     {
+        Paint paint = new Paint();
+        paint.setColor(Color.DKGRAY);
+        canvas.drawText("[" + canvas.getWidth() + "," + canvas.getHeight() + "]", 20, 20, paint);
 
     }
 

@@ -65,13 +65,17 @@ public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
 
     private void drawCanvas(Canvas canvas)
     {
-        int centerX = canvas.getWidth() / 2;
         int centerY = canvas.getHeight() / 2;
 
-        Log.v(TAG, " Canvas SIZE : (" + canvas.getWidth() + "," + canvas.getHeight() +" )");
+        float magnification = 1.0f;
+        float maxRange = 2200.0f;
+
+        //Log.v(TAG, " Canvas SIZE : (" + canvas.getWidth() + "," + canvas.getHeight() +" )");
 
         int rangeHeight = canvas.getHeight();
         int rangeWidth = canvas.getWidth();
+
+        float resolution = ((rangeHeight / 2.0f) / maxRange);
 
         // Clears the canvas.
         canvas.drawARGB(255, 0, 0, 0);
@@ -81,10 +85,43 @@ public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
         bgLine.setColor(Color.DKGRAY);
         canvas.drawLine(0, centerY, rangeWidth, centerY, bgLine);
 
-
         Paint paint = new Paint();
         paint.setColor(Color.WHITE);
-        canvas.drawText("[" + dataHolder.getValue() + "]", centerX, centerY, paint);
+
+        int maxValue = 0;
+        int minValue = 0;
+        int[] values = dataHolder.getValues(rangeWidth);
+        if (values != null)
+        {
+            int pointX = 0;
+            //magnification
+            float previousY = centerY;
+            for (int value : values)
+            {
+                float currentY = ((float)(value)) * resolution * magnification + centerY;
+                canvas.drawLine(pointX, previousY, (pointX + 1), currentY, paint);
+                pointX++;
+                previousY = currentY;
+                if (maxValue < value)
+                {
+                    maxValue = value;
+                }
+                if (minValue > value)
+                {
+                    minValue = value;
+                }
+            }
+        }
+        String message = "max: " + maxValue + " min: " + minValue;
+        //Log.v(TAG, message);
+        canvas.drawText(message, rangeWidth - 125, 20, paint);
+
+        paint.setColor(Color.argb(255, 32, 32, 32));
+        float lineY = ((float)(maxValue)) * resolution * magnification + centerY;
+        canvas.drawLine(0, lineY, canvas.getWidth(), lineY, paint);
+
+        lineY = ((float)(minValue)) * resolution * magnification + centerY;
+        canvas.drawLine(0, lineY, canvas.getWidth(), lineY, paint);
     }
 
 
@@ -93,9 +130,9 @@ public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
      */
     private void drawInformationMessages(Canvas canvas)
     {
-        Paint paint = new Paint();
-        paint.setColor(Color.DKGRAY);
-        canvas.drawText("[" + canvas.getWidth() + "," + canvas.getHeight() + "]", 20, 20, paint);
+        //Paint paint = new Paint();
+        //paint.setColor(Color.DKGRAY);
+        //canvas.drawText("[" + canvas.getWidth() + "," + canvas.getHeight() + "]", 20, 20, paint);
 
     }
 

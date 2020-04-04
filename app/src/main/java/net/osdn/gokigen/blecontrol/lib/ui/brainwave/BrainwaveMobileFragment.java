@@ -37,7 +37,7 @@ public class BrainwaveMobileFragment extends Fragment implements BrainwaveConnec
         final BrainwaveMobileViewModel brainwaveViewModel = ViewModelProviders.of(this).get(BrainwaveMobileViewModel.class);
         View root = inflater.inflate(R.layout.fragment_brainwave, container, false);
         final BrainwaveRawGraphView cameraLiveImageView = root.findViewById(R.id.cameraLiveImageView);
-        dataHolder = new BrainwaveDataHolder(cameraLiveImageView);
+        dataHolder = new BrainwaveDataHolder(cameraLiveImageView, 16000);
         cameraLiveImageView.setDataHolder(dataHolder);
         final TextView textView = root.findViewById(R.id.text_brainwave);
         brainwaveViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {

@@ -108,6 +108,7 @@ public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
                 dataReceiver.receivedRawData(value);
                 return;
             }
+            dataReceiver.receivedSummaryData(data);
             //SimpleLogDumper.dump_bytes("RECV SPP [" + data.length + "] ", data);
         }
         catch (Exception e)

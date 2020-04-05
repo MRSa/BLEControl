@@ -1,5 +1,7 @@
 package net.osdn.gokigen.blecontrol.lib.data.brainwave;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -9,10 +11,11 @@ import java.util.Arrays;
 
 public class BrainwaveDataHolder implements IBrainwaveDataReceiver
 {
-    //private final String TAG = toString();
+    private final String TAG = toString();
 
     private final IBrainwaveDataDrawer dataDrawer;
     private int[] valueBuffer;
+    private BrainwaveSummaryData currentSummaryData;
     private int maxBufferSize;
     private int currentPosition;
     private boolean bufferIsFull = false;
@@ -24,6 +27,8 @@ public class BrainwaveDataHolder implements IBrainwaveDataReceiver
 
         valueBuffer = new int[maxBufferSize];
         currentPosition = 0;
+
+        currentSummaryData = new BrainwaveSummaryData();
     }
 
     @Override
@@ -45,6 +50,21 @@ public class BrainwaveDataHolder implements IBrainwaveDataReceiver
             e.printStackTrace();
         }
         dataDrawer.drawGraph();
+    }
+
+    @Override
+    public void receivedSummaryData(byte[] data)
+    {
+        if (!currentSummaryData.update(data))
+        {
+            // parse failure...
+            Log.v(TAG, " FAIL : PARSE EEG SUMMARY DATA (" + data.length + ")");
+        }
+    }
+
+    public @NonNull BrainwaveSummaryData getSummaryData()
+    {
+        return (currentSummaryData);
     }
 
     public @Nullable int[] getValues(int size)

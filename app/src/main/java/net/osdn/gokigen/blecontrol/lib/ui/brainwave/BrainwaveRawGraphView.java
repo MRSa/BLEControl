@@ -10,12 +10,15 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveDataHolder;
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveSummaryData;
 
 public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
 {
     private final String TAG = this.toString();
     private BrainwaveDataHolder dataHolder = null;
+    private Context context = null;
 
     public BrainwaveRawGraphView(@NonNull Context context)
     {
@@ -40,6 +43,7 @@ public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
         try
         {
             Log.v(TAG, " initialize.");
+            this.context = context;
         }
         catch (Exception e)
         {
@@ -130,9 +134,91 @@ public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
      */
     private void drawInformationMessages(Canvas canvas)
     {
-        //Paint paint = new Paint();
-        //paint.setColor(Color.DKGRAY);
-        //canvas.drawText("[" + canvas.getWidth() + "," + canvas.getHeight() + "]", 20, 20, paint);
+        try
+        {
+            BrainwaveSummaryData summaryData = dataHolder.getSummaryData();
+            Paint paint = new Paint();
+            paint.setColor(Color.DKGRAY);
+
+            Paint.FontMetrics metrics = paint.getFontMetrics();
+            int lineHeight = (int) (metrics.bottom - metrics.top) + 2;
+            int positionY = 20;
+
+            String message = context.getString(R.string.value_title_attention) + " " + summaryData.getAttention();
+            canvas.drawText(message, 10, positionY, paint);
+            positionY = positionY + lineHeight;
+
+            message = context.getString(R.string.value_title_mediation) + " " + summaryData.getMediation();
+            canvas.drawText(message, 10, positionY, paint);
+            positionY = positionY + lineHeight;
+
+
+            if (!summaryData.isSkinConnected())
+            {
+                paint.setColor(Color.RED);
+                String notConnectMessage = "Sensor lead is not connected.";
+                if (context != null)
+                {
+                    notConnectMessage = context.getString(R.string.sensor_not_contacted);
+                }
+                canvas.drawText(notConnectMessage, 10, positionY, paint);
+            }
+            paint.setColor(Color.DKGRAY);
+            positionY = canvas.getHeight() - lineHeight;
+
+            int value = summaryData.getMidGamma();
+            paint.setColor(Color.DKGRAY);
+            message = context.getString(R.string.value_title_midGamma) + " " + value;
+            canvas.drawText(message, 10, positionY, paint);
+            positionY = positionY - lineHeight;
+
+            value = summaryData.getLowGamma();
+            paint.setColor(Color.DKGRAY);
+            message = context.getString(R.string.value_title_lowGamma) + " " + value;
+            canvas.drawText(message, 10, positionY, paint);
+            positionY = positionY - lineHeight;
+
+            value = summaryData.getHighBeta();
+            paint.setColor(Color.DKGRAY);
+            message = context.getString(R.string.value_title_highBeta) + " " + value;
+            canvas.drawText(message, 10, positionY, paint);
+            positionY = positionY - lineHeight;
+
+            value = summaryData.getLowBeta();
+            paint.setColor(Color.DKGRAY);
+            message = context.getString(R.string.value_title_lowBeta) + " " + value;
+            canvas.drawText(message, 10, positionY, paint);
+            positionY = positionY - lineHeight;
+
+            value = summaryData.getHighAlpha();
+            paint.setColor(Color.DKGRAY);
+            message = context.getString(R.string.value_title_highAlpha) + " " + value;
+            canvas.drawText(message, 10, positionY, paint);
+            positionY = positionY - lineHeight;
+
+            value = summaryData.getLowAlpha();
+            paint.setColor(Color.DKGRAY);
+            message = context.getString(R.string.value_title_lowAlpha) + " " + value;
+            canvas.drawText(message, 10, positionY, paint);
+            positionY = positionY - lineHeight;
+
+            value = summaryData.getTheta();
+            paint.setColor(Color.DKGRAY);
+            message = context.getString(R.string.value_title_theta) + " " + value;
+            canvas.drawText(message, 10, positionY, paint);
+            positionY = positionY - lineHeight;
+
+            value = summaryData.getDelta();
+            paint.setColor(Color.DKGRAY);
+            message = context.getString(R.string.value_title_delta) + " " + value;
+            canvas.drawText(message, 10, positionY, paint);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+
 
     }
 

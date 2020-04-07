@@ -71,4 +71,5 @@
     <string name="value_title_midGamma">mid Gamma(41&#8211;49.75Hz): </string>
     <string name="value_title_attention">Attention: </string>
     <string name="value_title_mediation">Mediation: </string>
+    <string name="label_logging"> Logging</string>
 </resources>

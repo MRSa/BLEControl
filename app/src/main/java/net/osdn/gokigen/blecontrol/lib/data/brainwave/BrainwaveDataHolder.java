@@ -81,6 +81,11 @@ public class BrainwaveDataHolder implements IBrainwaveDataReceiver
             {
                 return (Arrays.copyOfRange(valueBuffer, 0, endPosition));
             }
+            if (currentPosition == 0)
+            {
+                endPosition = (maxBufferSize - 1);
+                return (Arrays.copyOfRange(valueBuffer, (endPosition - size), endPosition));
+            }
 
             int remainSize = size - (currentPosition - 1);
             int [] size0 = Arrays.copyOfRange(valueBuffer, 0, (currentPosition - 1));
@@ -88,8 +93,8 @@ public class BrainwaveDataHolder implements IBrainwaveDataReceiver
 
             replyData = new int[size];
 
-            System.arraycopy(size0, 0, replyData, 0, size0.length);
-            System.arraycopy(size1, 0, replyData, size0.length, size1.length);
+            System.arraycopy(size1, 0, replyData, 0, size1.length);
+            System.arraycopy(size0, 0, replyData, size1.length, size0.length);
         }
         catch (Exception e)
         {

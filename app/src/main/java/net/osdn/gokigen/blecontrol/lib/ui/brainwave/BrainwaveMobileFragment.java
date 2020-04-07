@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -55,7 +56,8 @@ public class BrainwaveMobileFragment extends Fragment implements BrainwaveConnec
                 prepareDeviceSelection(context, root);
 
                 // Connect Button
-                final BrainwaveConnection eegConnection = new BrainwaveConnection(context, this, brainwaveViewModel, dataHolder);
+                final Switch loggingSwitch = root.findViewById(R.id.switch_logging);
+                final BrainwaveConnection eegConnection = new BrainwaveConnection(context, this, brainwaveViewModel, dataHolder, loggingSwitch);
                 final Button queryButton = root.findViewById(R.id.connect_to_eeg);
                 if (queryButton != null)
                 {

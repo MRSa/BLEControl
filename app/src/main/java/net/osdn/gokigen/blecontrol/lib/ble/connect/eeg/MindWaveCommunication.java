@@ -8,10 +8,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
-import net.osdn.gokigen.blecontrol.lib.SimpleLogDumper;
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.BleDeviceFinder;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveFileLogger;
 import net.osdn.gokigen.blecontrol.lib.data.brainwave.IBrainwaveDataReceiver;
 
 import java.io.ByteArrayOutputStream;
@@ -27,7 +27,9 @@ public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
     private final ITextDataUpdater dataUpdater;
     private final IBrainwaveDataReceiver dataReceiver;
     private BleDeviceFinder deviceFinder = null;
+    private BrainwaveFileLogger fileLogger = null;
     private boolean foundDevice = false;
+    private boolean loggingFlag = false;
 
     public MindWaveCommunication(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater, @NonNull IBrainwaveDataReceiver dataReceiver)
     {
@@ -40,12 +42,13 @@ public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
         }
     }
 
-    public void connect(@NonNull String deviceName)
+    public void connect(@NonNull String deviceName, boolean loggingFlag)
     {
-        Log.v(TAG, " BrainWaveMobileCommunicator::connect() : " + deviceName);
-        setText(context.getString(R.string.start_query) + " '" + deviceName + "' ");
+        Log.v(TAG, " BrainWaveMobileCommunicator::connect() : " + deviceName + " Logging : " + loggingFlag);
+        setText(context.getString(R.string.start_query) + " '" + deviceName + "'");
         try
         {
+            this.loggingFlag = loggingFlag;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
             {
                 // BLE のサービスを取得
@@ -79,8 +82,6 @@ public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
         dataUpdater.addText(message);
     }
 
-
-
     private void parseReceivedData(byte[] data)
     {
         // 受信データブロック１つ分
@@ -109,7 +110,11 @@ public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
                 return;
             }
             dataReceiver.receivedSummaryData(data);
-            //SimpleLogDumper.dump_bytes("RECV SPP [" + data.length + "] ", data);
+            if (fileLogger != null)
+            {
+                // ファイルにサマリーデータを出力する
+                fileLogger.outputSummaryData(data);
+            }
         }
         catch (Exception e)
         {
@@ -134,6 +139,19 @@ public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
         if (inputStream == null)
         {
             return;
+        }
+
+        if (loggingFlag)
+        {
+            try
+            {
+                // ログ出力を指示されていた場合...ファイル出力クラスを作成しておく
+                fileLogger = new BrainwaveFileLogger(context);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
 
         // シリアルデータの受信メイン部分

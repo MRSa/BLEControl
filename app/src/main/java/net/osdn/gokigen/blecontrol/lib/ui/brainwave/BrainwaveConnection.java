@@ -3,6 +3,7 @@ package net.osdn.gokigen.blecontrol.lib.ui.brainwave;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,14 +23,16 @@ public class BrainwaveConnection implements View.OnClickListener, ITextDataUpdat
     private final BrainwaveMobileViewModel viewModel;
     private final MindWaveCommunication communicator;
     private final SnackBarMessage messageToShow;
+    private final Switch loggingSwitch;
 
-    BrainwaveConnection(@NonNull FragmentActivity context, @NonNull SelectDevice deviceSelection, @NonNull BrainwaveMobileViewModel viewModel, @NonNull IBrainwaveDataReceiver dataReceiver)
+    BrainwaveConnection(@NonNull FragmentActivity context, @NonNull SelectDevice deviceSelection, @NonNull BrainwaveMobileViewModel viewModel, @NonNull IBrainwaveDataReceiver dataReceiver, @Nullable Switch loggingSwitch)
     {
         this.context = context;
         this.deviceSelection = deviceSelection;
         this.viewModel = viewModel;
         this.communicator = new MindWaveCommunication(context, this, dataReceiver);
         this.messageToShow = new SnackBarMessage(context, false);
+        this.loggingSwitch = loggingSwitch;
     }
 
     @Override
@@ -50,18 +53,24 @@ public class BrainwaveConnection implements View.OnClickListener, ITextDataUpdat
 
     private void connectToEEG(@Nullable final String selectedDevice)
     {
+        boolean logging = false;
         if (selectedDevice == null)
         {
             Log.v(TAG, " DEVICE is NULL.");
             return;
         }
+        if (loggingSwitch != null)
+        {
+            logging = loggingSwitch.isChecked();
+        }
         try
         {
+            final boolean loggingFlag = logging;
             Log.v(TAG, " CONNECT TO EEG. : " + selectedDevice);
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    communicator.connect(selectedDevice);
+                    communicator.connect(selectedDevice, loggingFlag);
                 }
             });
             thread.start();

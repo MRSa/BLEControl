@@ -29,7 +29,7 @@
             android:id="@+id/nav_brainwave"
             android:icon="@drawable/ic_headset_mic_black_24dp"
             android:title="@string/menu_eeg"
-            android:visible="true" />
+            android:visible="false" />
     </group>
 
     <item android:title="@string/navigation_group_settings"

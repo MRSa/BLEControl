@@ -33,7 +33,7 @@ import net.osdn.gokigen.blecontrol.lib.ble.R;
 
 public class MainActivity extends AppCompatActivity
 {
-    private String TAG = toString();
+    private final String TAG = toString();
     private AppBarConfiguration mAppBarConfiguration;
 
     @Override
@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) ||
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) ||
+                    (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) ||
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) ||
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) ||
                     (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_MEDIA_LOCATION) != PackageManager.PERMISSION_GRANTED) ||
@@ -131,6 +132,7 @@ public class MainActivity extends AppCompatActivity
                                 Manifest.permission.READ_EXTERNAL_STORAGE,
                                 Manifest.permission.BLUETOOTH,
                                 Manifest.permission.BLUETOOTH_ADMIN,
+                                Manifest.permission.BLUETOOTH_CONNECT,
                                 Manifest.permission.ACCESS_COARSE_LOCATION,
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_MEDIA_LOCATION,

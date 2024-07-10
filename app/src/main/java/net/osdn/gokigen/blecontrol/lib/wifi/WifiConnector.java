@@ -31,7 +31,7 @@ import static android.content.Context.WIFI_SERVICE;
 
 public class WifiConnector
 {
-    private String TAG = toString();
+    private final String TAG = toString();
 
     private final ITextDataUpdater dataUpdater;
     private final FragmentActivity context;

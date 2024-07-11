@@ -12,6 +12,7 @@
     <string name="action_exit">Exit</string>
     <string name="action_fv100_connect">Connect</string>
     <string name="label_device">DEVICE</string>
+    <string name="permission_not_granted">Permissions not granted by the user.</string>
 
     <string name="menu_home">Home</string>
     <string name="menu_fv100">FV-100</string>

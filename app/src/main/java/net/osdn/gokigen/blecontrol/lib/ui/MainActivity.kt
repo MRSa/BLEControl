@@ -1,172 +1,204 @@
-package net.osdn.gokigen.blecontrol.lib.ui;
+package net.osdn.gokigen.blecontrol.lib.ui
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.WindowManager
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI.navigateUp
+import androidx.navigation.ui.NavigationUI.setupActionBarWithNavController
+import androidx.navigation.ui.NavigationUI.setupWithNavController
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.navigation.NavigationView
+import net.osdn.gokigen.blecontrol.lib.ble.R
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import android.provider.Settings;
-import android.util.Log;
-import android.view.MenuItem;
-import android.view.View;
-
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.google.android.material.navigation.NavigationView;
-
-import androidx.drawerlayout.widget.DrawerLayout;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import android.view.Menu;
-import android.view.WindowManager;
-
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-
-public class MainActivity extends AppCompatActivity
+class MainActivity : AppCompatActivity()
 {
-    private final String TAG = toString();
-    private AppBarConfiguration mAppBarConfiguration;
+    private lateinit var mAppBarConfiguration: AppBarConfiguration
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?)
     {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setTitle(R.string.app_name);
-        FloatingActionButton fab = findViewById(R.id.wifi);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view)
-            {
+        Log.v(TAG, " ----- onCreate() -----")
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        try
+        {
+            val toolbar = findViewById<Toolbar>(R.id.toolbar)
+            setSupportActionBar(toolbar)
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            setTitle(R.string.app_name)
+
+            val fab = findViewById<FloatingActionButton>(R.id.wifi)
+            fab.setOnClickListener {
                 try
                 {
                     // Launch WIFI Settings
-                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                    startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
                 }
-                catch (Exception e)
+                catch (e: Exception)
                 {
-                    e.printStackTrace();
+                    e.printStackTrace()
                 }
             }
-        });
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        mAppBarConfiguration = new AppBarConfiguration.Builder(
+            val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+            val navigationView = findViewById<NavigationView>(R.id.nav_view)
+            mAppBarConfiguration = AppBarConfiguration.Builder(
                 R.id.nav_fv100, R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow,
-                R.id.nav_tools, R.id.nav_settings_bluetooth)
-                .setDrawerLayout(drawer)
-                .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        NavigationUI.setupWithNavController(navigationView, navController);
+                R.id.nav_tools, R.id.nav_settings_bluetooth
+            ).setDrawerLayout(drawer).build()
 
-        setupPermissions();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return (true);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        int id = item.getItemId();
-        if (id == R.id.action_exit)
-        {
-            exitApplication();
-            return (true);
+            val navController = findNavController(this, R.id.nav_host_fragment)
+            setupActionBarWithNavController(this, navController, mAppBarConfiguration)
+            setupWithNavController(navigationView, navController)
         }
-        return (super.onOptionsItemSelected(item));
-    }
+        catch (e: Exception)
+        {
+            e.printStackTrace()
+        }
 
-
-    @Override
-    public boolean onSupportNavigateUp()
-    {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        return (NavigationUI.navigateUp(navController, mAppBarConfiguration) || super.onSupportNavigateUp());
-    }
-
-    private void setupPermissions()
-    {
         try
         {
-            // パーミッション群のオプトイン
-            final int REQUEST_NEED_PERMISSIONS = 1010;
+            ///////// SET PERMISSIONS /////////
+            Log.v(TAG, " ----- SET PERMISSIONS -----")
+            if (!allPermissionsGranted())
+            {
+                val requestPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
 
-            if ((ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_MEDIA_LOCATION) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) ||
-                    (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.READ_EXTERNAL_STORAGE,
-                                Manifest.permission.BLUETOOTH,
-                                Manifest.permission.BLUETOOTH_ADMIN,
-                                Manifest.permission.BLUETOOTH_CONNECT,
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_MEDIA_LOCATION,
-                                Manifest.permission.ACCESS_NETWORK_STATE,
-                                Manifest.permission.ACCESS_WIFI_STATE,
-                                Manifest.permission.CHANGE_WIFI_STATE,
-                                Manifest.permission.CHANGE_NETWORK_STATE,
-                                Manifest.permission.VIBRATE,
-                                Manifest.permission.INTERNET,
-                        },
-                        REQUEST_NEED_PERMISSIONS);
+                    ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+                    if(!allPermissionsGranted())
+                    {
+                        // Abort launch application because required permissions was rejected.
+                        Toast.makeText(this, getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show()
+                        Log.v(TAG, "----- APPLICATION LAUNCH ABORTED -----")
+                        finish()
+                    }
+                }
+                requestPermission.launch(REQUIRED_PERMISSIONS)
             }
         }
-        catch (Exception e)
+        catch (e: Exception)
         {
-            e.printStackTrace();
+            e.printStackTrace()
         }
     }
 
-    private void connect_to_bluetooth_device()
+    private fun allPermissionsGranted() : Boolean
+    {
+        var result = true
+        for (param in REQUIRED_PERMISSIONS)
+        {
+            if (ContextCompat.checkSelfPermission(
+                    baseContext,
+                    param
+                ) != PackageManager.PERMISSION_GRANTED
+            )
+            {
+                // ----- Permission Denied...
+                if ((param == Manifest.permission.ACCESS_MEDIA_LOCATION)&&(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q))
+                {
+                    //　この場合は権限付与の判断を除外 (デバイスが (10) よりも古く、ACCESS_MEDIA_LOCATION がない場合）
+                }
+                else if ((param == Manifest.permission.READ_EXTERNAL_STORAGE)&&(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU))
+                {
+                    // この場合は、権限付与の判断を除外 (SDK: 33以上はエラーになる...)
+                }
+                else if ((param == Manifest.permission.WRITE_EXTERNAL_STORAGE)&&(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU))
+                {
+                    // この場合は、権限付与の判断を除外 (SDK: 33以上はエラーになる...)
+                }
+                else if ((param == Manifest.permission.BLUETOOTH_SCAN)&&(Build.VERSION.SDK_INT < Build.VERSION_CODES.S))
+                {
+                    // この場合は、権限付与の判断を除外 (SDK: 31よりも下はエラーになるはず...)
+                    Log.v(TAG, "BLUETOOTH_SCAN")
+                }
+                else if ((param == Manifest.permission.BLUETOOTH_CONNECT)&&(Build.VERSION.SDK_INT < Build.VERSION_CODES.S))
+                {
+                    // この場合は、権限付与の判断を除外 (SDK: 31よりも下はエラーになるはず...)
+                    Log.v(TAG, "BLUETOOTH_CONNECT")
+                }
+                else
+                {
+                    // ----- 権限が得られなかった場合...
+                    Log.v(TAG, " Permission: $param : ${Build.VERSION.SDK_INT}")
+                    result = false
+                }
+            }
+        }
+        return (result)
+    }
+
+    override fun onSupportNavigateUp(): Boolean
+    {
+        val navController = findNavController(this, R.id.nav_host_fragment)
+        return (navigateUp(navController, mAppBarConfiguration) || super.onSupportNavigateUp())
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean
+    {
+        menuInflater.inflate(R.menu.main, menu)
+        return (true)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean
     {
         try
         {
-            Log.v(TAG, "connect_to_bluetooth_device()");
-
+            val id = item.itemId
+            if (id == R.id.action_exit)
+            {
+                exitApplication()
+                return (true)
+            }
         }
-        catch (Exception e)
+        catch (e: Exception)
         {
-            e.printStackTrace();
+            e.printStackTrace()
         }
+        return (super.onOptionsItemSelected(item))
     }
 
-    private void exitApplication()
+    private fun exitApplication()
     {
-        finish();
+        finish()
+    }
+
+    companion object
+    {
+        private val TAG = MainActivity::class.java.simpleName
+
+        private const val REQUEST_CODE_PERMISSIONS = 1010
+
+        private val REQUIRED_PERMISSIONS = arrayOf(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.CHANGE_NETWORK_STATE,
+            Manifest.permission.VIBRATE,
+            Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_MEDIA_LOCATION,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.BLUETOOTH_SCAN,
+        )
     }
 }

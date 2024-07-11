@@ -4,10 +4,8 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Build;
 import android.util.Log;
-
-import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
-
+import androidx.annotation.NonNull;
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.BleDeviceFinder;
 import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;

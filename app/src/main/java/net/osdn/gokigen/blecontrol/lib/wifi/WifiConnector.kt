@@ -1,361 +1,262 @@
-package net.osdn.gokigen.blecontrol.lib.wifi;
+package net.osdn.gokigen.blecontrol.lib.wifi
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.net.wifi.WifiNetworkSpecifier;
-import android.net.wifi.WifiNetworkSuggestion;
-import android.os.Build;
-import android.util.Log;
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.net.wifi.WifiConfiguration
+import android.net.wifi.WifiManager
+import android.net.wifi.WifiNetworkSpecifier
+import android.net.wifi.WifiNetworkSuggestion
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.fragment.app.FragmentActivity
+import net.osdn.gokigen.blecontrol.lib.ble.R
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater
+import android.net.wifi.WifiInfo
+import java.lang.Exception
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.fragment.app.FragmentActivity;
+class WifiConnector(
+    private val context: FragmentActivity,
+    private val dataUpdater: ITextDataUpdater
+) {
 
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
+    private val tag: String = this.javaClass.simpleName
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.content.Context.WIFI_SERVICE;
-
-public class WifiConnector
-{
-    private final String TAG = toString();
-
-    private final ITextDataUpdater dataUpdater;
-    private final FragmentActivity context;
-    private final BroadcastReceiver connectionReceiver;
-
-    public WifiConnector(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater)
-    {
-        this.context = context;
-        this.dataUpdater = dataUpdater;
-        connectionReceiver = new BroadcastReceiver()
-        {
-            @Override
-            public void onReceive(Context context, Intent intent)
-            {
-                onReceiveBroadcastOfConnection(context, intent);
-            }
-        };
+    fun interface WifiConnectNotify {
+        fun onWifiConnected(isConnect: Boolean)
     }
 
-    private void onReceiveBroadcastOfConnection(Context context, Intent intent)
-    {
-        String action = intent.getAction();
-        if (action == null)
-        {
-            // action不明だった。抜ける。
-            // Log.v(TAG, "intent.getAction() : null");
-            return;
-        }
-/*
-        if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
-        {
-            // 不要な Broadcastだった。抜ける。
-            return;
-        }
-*/
-        try
-        {
-            Log.v(TAG, "onReceiveBroadcastOfConnection() : CONNECTIVITY_ACTION");
-            WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if (wifiManager == null)
-            {
-                // WifiManagerが取得できなかった
-                Log.v(TAG, " WifiManager() : null");
-                return;
-            }
-            WifiInfo info = wifiManager.getConnectionInfo();
-            if (wifiManager.isWifiEnabled() && info != null)
-            {
-                if (info.getNetworkId() != -1)
-                {
-                    Log.v(TAG, "Network ID is NOT -1, there is no currently connected network.");
-                }
-            }
-            else
-            {
-                if (info == null)
-                {
-                    Log.v(TAG, "NETWORK INFO IS NULL.");
-                }
-                else
-                {
-                    Log.v(TAG, "isWifiEnabled : " + wifiManager.isWifiEnabled() + " NetworkId : " + info.getNetworkId());
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+    private val connectionReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            onReceiveBroadcastOfConnection(context, intent)
         }
     }
 
-    public void connectToWifi(@NonNull String wifiSsId, @NonNull String wifiKey, @NonNull WifiConnectNotify callback)
-    {
-        try
-        {
-            String message = "connect_wifi\n    SSID : " + wifiSsId + "  Key : " + wifiKey;
-            Log.v(TAG, message);
-            //messageToShow.showMessage(message);
-            WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(WIFI_SERVICE);
-            turnOnWiFi(wifi);
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
-            {
-                //  API LEVEL < 29
-                connectToWifiOlderVersion(wifi, wifiSsId, wifiKey, callback);
+    private fun onReceiveBroadcastOfConnection(context: Context, intent: Intent) {
+        val action = intent.action ?: return
+
+        try {
+            Log.v(tag, "onReceiveBroadcastOfConnection() : $action")
+            val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+            if (wifiManager == null) {
+                Log.v(tag, " WifiManager() : null")
+                return
             }
-            else
-            {
+
+            @Suppress("DEPRECATION")
+            val info: WifiInfo? = wifiManager.connectionInfo
+            if (wifiManager.isWifiEnabled && info != null) {
+                if (info.networkId != -1) {
+                    Log.v(tag, "Network ID is NOT -1, there is connected network.")
+                }
+            } else {
+                if (info == null) {
+                    Log.v(tag, "NETWORK INFO IS NULL.")
+                } else {
+                    Log.v(tag, "isWifiEnabled : ${wifiManager.isWifiEnabled} NetworkId : ${info.networkId}")
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun connectToWifi(wifiSsId: String, wifiKey: String, callback: WifiConnectNotify) {
+        try {
+            Log.v(tag, "connect_wifi\n    SSID : $wifiSsId  Key : $wifiKey")
+            val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+
+            turnOnWiFi(wifi)
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                // API LEVEL < 29
+                connectToWifiOlderVersion(wifi, wifiSsId, wifiKey, callback)
+            } else {
                 // API LEVEL >= 29
-                connectToWifiNewerVersion(wifiSsId, wifiKey, callback);
+                connectToWifiNewerVersion(wifiSsId, wifiKey, callback)
             }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    private void connectToWifiOlderVersion(@Nullable WifiManager wifi, @NonNull String wifiSsId, @NonNull String wifiKey, @NonNull WifiConnectNotify callback)
-    {
-        boolean isConnect = false;
-        try
-        {
-            if (wifi == null)
-            {
-                callback.onWifiConnected(false);
-                return;
+    @Suppress("DEPRECATION")
+    private fun connectToWifiOlderVersion(
+        wifi: WifiManager?,
+        wifiSsId: String,
+        wifiKey: String,
+        callback: WifiConnectNotify
+    ) {
+        var isConnect = false
+        try {
+            if (wifi == null) {
+                callback.onWifiConnected(false)
+                return
             }
 
-            String ssId = "\"" + wifiSsId + "\"";
-            String key = "\"" + wifiKey + "\"";
-            int networkId = -1;
-            WifiConfiguration targetConfiguration = null;
-            List<WifiConfiguration> configs = wifi.getConfiguredNetworks();
-            for (WifiConfiguration config : configs)
-            {
-                Log.v(TAG, "NETWORK : " + config.SSID + " (hidden : " + config.hiddenSSID + ") " + config.networkId);
-                if (config.SSID.matches(ssId))
-                {
-                    // すでにネットワークが設定済
-                    Log.v(TAG, " FOUND SSID : " + ssId);
-                    boolean ret = wifi.removeNetwork(config.networkId);
-                    if (ret)
-                    {
-                        Log.v(TAG, " NETWORK IS REMOVED. : " + config.SSID);
-                        targetConfiguration = null;
-                        break;
+            val ssId = "\"$wifiSsId\""
+            val key = "\"$wifiKey\""
+            var networkId = -1
+            var targetConfiguration: WifiConfiguration? = null
+            val configs: List<WifiConfiguration>? = wifi.configuredNetworks
+            if (configs != null) {
+                for (config in configs) {
+                    Log.v(tag, "NETWORK : ${config.SSID} (hidden : ${config.hiddenSSID}) ${config.networkId}")
+                    if (config.SSID != null && config.SSID.matches(Regex(ssId))) {
+                        Log.v(tag, " FOUND SSID : $ssId")
+                        val ret = wifi.removeNetwork(config.networkId)
+                        if (ret) {
+                            Log.v(tag, " NETWORK IS REMOVED. : ${config.SSID}")
+                            targetConfiguration = null
+                            break
+                        }
+                        config.preSharedKey = key
+                        networkId = config.networkId
+                        targetConfiguration = config
+                        break
                     }
-                    config.preSharedKey = key;
-                    networkId = config.networkId;
-                    targetConfiguration = config;
-                    break;
                 }
             }
-            if (targetConfiguration == null)
-            {
-                // ネットワークが未設定だった場合...
-                targetConfiguration = new WifiConfiguration();
-                targetConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-                targetConfiguration.SSID = ssId;
-                targetConfiguration.preSharedKey = key;
-                targetConfiguration.hiddenSSID = true;
-                networkId = wifi.addNetwork(targetConfiguration);
-            }
 
-            // ネットワークIDが取得できた場合、、、
-            if (networkId != -1)
-            {
-                // いったん WIFIを無効化してから...
-                for (WifiConfiguration config : wifi.getConfiguredNetworks())
-                {
-                    wifi.enableNetwork(config.networkId, false);
+            if (targetConfiguration == null) {
+                targetConfiguration = WifiConfiguration().apply {
+                    allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK)
+                    SSID = ssId
+                    preSharedKey = key
+                    hiddenSSID = true
                 }
-                // WIFIを接続する
-                wifi.enableNetwork(networkId, true);
+                networkId = wifi.addNetwork(targetConfiguration)
             }
-            else
-            {
-                // 接続に失敗した
-                dataUpdater.showSnackBar(context.getString(R.string.connect_wifi_failure) + " " + ssId);
-                callback.onWifiConnected(false);
-                return;
-            }
-            dataUpdater.showSnackBar(context.getString(R.string.try_to_connect_wifi) + " " + ssId);
-            isConnect = true;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        callback.onWifiConnected(isConnect);
-    }
 
-
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    private void connectToWifiNewerVersion(@NonNull String wifiSsId, @NonNull String wifiKey, @NonNull WifiConnectNotify callback)
-    {
-        Log.v(TAG, "connectToWifiNewerVersion() : '" + wifiSsId + "' [" + wifiKey + "]");
-        try
-        {
-            turnOffWifiNewerVersion(wifiSsId, wifiKey);
-
-            WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
-            builder.setSsid(wifiSsId);
-            builder.setIsHiddenSsid(true);
-            builder.setWpa2Passphrase(wifiKey);
-            WifiNetworkSpecifier specifier = builder.build();
-
-            NetworkRequest.Builder requestbuilder = new NetworkRequest.Builder();
-            //requestbuilder.removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-            requestbuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
-            requestbuilder.setNetworkSpecifier(specifier);
-
-            final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (connectivityManager != null)
-            {
-                final ConnectivityManager.NetworkCallback networkCallback = new WiFiCallback(callback);
-                connectivityManager.requestNetwork(requestbuilder.build(), networkCallback);
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    private void turnOffWifiNewerVersion(@NonNull String wifiSsId, @NonNull String wifiKey)
-    {
-        try
-        {
-
-            final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (connectivityManager != null)
-            {
-                Network currentNetwork = connectivityManager.getActiveNetwork();
-                if (currentNetwork == null)
-                {
-                    // network is not active.
-                    return;
+            if (networkId != -1) {
+                wifi.configuredNetworks?.forEach { config ->
+                    wifi.enableNetwork(config.networkId, false)
                 }
-                //final ConnectivityManager.NetworkCallback networkCallback = new WiFiCallback(callback);
-                //connectivityManager.requestNetwork(requestbuilder.build(), networkCallback);
+                wifi.enableNetwork(networkId, true)
+                dataUpdater.showSnackBar("${context.getString(R.string.try_to_connect_wifi)} $ssId")
+                isConnect = true
+            } else {
+                dataUpdater.showSnackBar("${context.getString(R.string.connect_wifi_failure)} $ssId")
+                callback.onWifiConnected(false)
+                return
             }
-
-            WifiNetworkSuggestion.Builder builder = new WifiNetworkSuggestion.Builder();
-            builder.setSsid(wifiSsId);
-            builder.setWpa2Passphrase(wifiKey);
-            WifiNetworkSuggestion suggestion = builder.build();
-            List<WifiNetworkSuggestion> list = new ArrayList<>();
-            list.add(suggestion);
-            WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if (wifiManager != null)
-            {
-                wifiManager.removeNetworkSuggestions(list);
-            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+        callback.onWifiConnected(isConnect)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun connectToWifiNewerVersion(
+        wifiSsId: String,
+        wifiKey: String,
+        callback: WifiConnectNotify
+    ) {
+        Log.v(tag, "connectToWifiNewerVersion() : '$wifiSsId' [$wifiKey]")
+        try {
+            removeWifiSuggestionNewerVersion(wifiSsId, wifiKey)
+
+            val specifier = WifiNetworkSpecifier.Builder()
+                .setSsid(wifiSsId)
+                .setIsHiddenSsid(true)
+                .setWpa2Passphrase(wifiKey)
+                .build()
+
+            val request = NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .setNetworkSpecifier(specifier)
+                .build()
+
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            if (connectivityManager != null) {
+                val networkCallback = WiFiCallback(callback)
+                connectivityManager.requestNetwork(request, networkCallback)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    private void turnOnWiFi(@Nullable WifiManager wifi)
-    {
-        if ((wifi != null)&&(!wifi.isWifiEnabled()))
-        {
-            try
-            {
-                // WiFi を ON にする (たぶん失敗する...)
-                if (!wifi.setWifiEnabled(true))
-                {
-                    dataUpdater.showSnackBar(R.string.turn_on_wifi_is_failed);
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun removeWifiSuggestionNewerVersion(wifiSsId: String, wifiKey: String) {
+        try {
+            val suggestion = WifiNetworkSuggestion.Builder()
+                .setSsid(wifiSsId)
+                .setWpa2Passphrase(wifiKey)
+                .build()
+
+            val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+            wifiManager?.removeNetworkSuggestions(listOf(suggestion))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun turnOnWiFi(wifi: WifiManager?) {
+        if (wifi != null && !wifi.isWifiEnabled) {
+            try {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    @Suppress("DEPRECATION")
+                    if (!wifi.setWifiEnabled(true)) {
+                        dataUpdater.showSnackBar(R.string.turn_on_wifi_is_failed)
+                    }
+                } else {
+                    // Android 10 (API 29) 以降はアプリから直接 ON にできない。
+                    // 必要に応じて Settings.ACTION_WIFI_SETTINGS などのインテントを発行してやる
+                    Log.w(tag, "Cannot enable Wi-Fi programmatically on Android 10+")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun startWatchWifiStatus(context: Context) {
+        Log.v(tag, "startWatchWifiStatus()")
+        try {
+            val filter = IntentFilter().apply {
+                @Suppress("DEPRECATION")
+                addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
+                @Suppress("DEPRECATION")
+                addAction(ConnectivityManager.CONNECTIVITY_ACTION)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    addAction(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION)
                 }
             }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
+            context.applicationContext.registerReceiver(connectionReceiver, filter)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    public void startWatchWifiStatus(Context context)
-    {
-        Log.v(TAG, "startWatchWifiStatus()");
-        try
-        {
-            final IntentFilter filter = new IntentFilter();
-            filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-            filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            {
-                filter.addAction(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION);
-            }
-            context.getApplicationContext().registerReceiver(connectionReceiver, filter);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+    fun stopWatchWifiStatus(context: Context) {
+        Log.v(tag, "stopWatchWifiStatus()")
+        try {
+            context.applicationContext.unregisterReceiver(connectionReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    public void stopWatchWifiStatus(Context context)
-    {
-        Log.v(TAG, "stopWatchWifiStatus()");
-        try
-        {
-            context.getApplicationContext().unregisterReceiver(connectionReceiver);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private inner class WiFiCallback(
+        private val callback: WifiConnectNotify
+    ) : ConnectivityManager.NetworkCallback() {
 
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    private class WiFiCallback extends ConnectivityManager.NetworkCallback
-    {
-
-        private WifiConnectNotify callback;
-        WiFiCallback(@NonNull WifiConnectNotify callback)
-        {
-            this.callback = callback;
+        override fun onAvailable(network: Network) {
+            Log.v(tag, "onAvailable $network")
+            callback.onWifiConnected(true)
         }
 
-        @Override
-        public void onAvailable(Network network)
-        {
-            Log.v(TAG, "onAvailable " + network.toString());
-            callback.onWifiConnected(true);
-
-        }
-
-        @Override
-        public void onLost(Network network)
-        {
-            Log.v(TAG, "onLost " + network.toString());
-            callback.onWifiConnected(false);
+        override fun onLost(network: Network) {
+            Log.v(tag, "onLost $network")
+            callback.onWifiConnected(false)
         }
     }
-
-
-    public interface WifiConnectNotify
-    {
-        void onWifiConnected(boolean isConnect);
-    }
-
 }

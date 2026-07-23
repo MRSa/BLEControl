@@ -28,6 +28,12 @@
     <string name="pref_ble_settings">Bluetooth LE Settings</string>
     <string name="pref_summary_ble_settings">Entry your camera name and passcode.</string>
 
+    <string name="ble_scan_start">検索中 </string>
+    <string name="ble_wake_start">起動開始 </string>
+    <string name="ble_scan_done"> 完了</string>
+    <string name="ble_control_is_limited_version">Bluetooth制御ができるのは Android 5.0 (Lollipop) 以降です。</string>
+    <string name="ble_adapter_is_nothing">Bluetoothスキャナが使えないようです。</string>
+
     <string name="launch_fail_via_ble">  Launch fail. via BLE : </string>
     <string name="ble_setting_is_off">Bluetooth is currently off.</string>
     <string name="saved_my_camera">Registerd : </string>

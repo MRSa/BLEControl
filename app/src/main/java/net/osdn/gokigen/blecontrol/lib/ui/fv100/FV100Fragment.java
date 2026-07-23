@@ -21,6 +21,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import net.osdn.gokigen.blecontrol.lib.ble.MyBleAdapter;
+import net.osdn.gokigen.blecontrol.lib.ble.MyBleDevice;
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 
 import java.util.List;
@@ -29,8 +30,9 @@ public class FV100Fragment extends Fragment implements FV100DeviceQuery.DeviceIn
 {
     private final String TAG = toString();
     private FV100ViewModel fv100ViewModel;
-    private List<String> bondedDeviceList;
+    private List<MyBleDevice> bondedDeviceList;
     private int selectedDevicePosition = 0;
+    private MyBleAdapter bleAdapter = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
@@ -39,6 +41,8 @@ public class FV100Fragment extends Fragment implements FV100DeviceQuery.DeviceIn
         fv100ViewModel = ViewModelProviders.of(this).get(FV100ViewModel.class);
         View root = inflater.inflate(R.layout.fragment_fv100, container, false);
         final TextView textView = root.findViewById(R.id.text_device_fv100);
+        bleAdapter = new MyBleAdapter(getActivity());
+        bleAdapter.prepare();
         fv100ViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>()
         {
             @Override
@@ -106,14 +110,16 @@ public class FV100Fragment extends Fragment implements FV100DeviceQuery.DeviceIn
      * @param context  context
      * @param root     view root
      */
-    private void prepareDeviceSelection(@NonNull Context context, @NonNull View root)
+    private void prepareDeviceSelection(@NonNull FragmentActivity context, @NonNull View root)
     {
         try
         {
             final Spinner selection_device = root.findViewById(R.id.spinner_selection_device);
             ArrayAdapter<String> adapter = new ArrayAdapter<>(context,android.R.layout.simple_spinner_item);
-            bondedDeviceList = MyBleAdapter.getBondedDevices();
-            adapter.addAll(bondedDeviceList);
+            bondedDeviceList = bleAdapter.getBondedDeviceList();
+            for (MyBleDevice device : bondedDeviceList) {
+                adapter.add(device.getName());
+            }
             selection_device.setAdapter(adapter);
             selection_device.setSelection(selectedDevicePosition);
             selection_device.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
@@ -151,7 +157,7 @@ public class FV100Fragment extends Fragment implements FV100DeviceQuery.DeviceIn
         String deviceName = "";
         try
         {
-            deviceName = bondedDeviceList.get(selectedDevicePosition);
+            deviceName = bondedDeviceList.get(selectedDevicePosition).getName();
         }
         catch (Exception e)
         {

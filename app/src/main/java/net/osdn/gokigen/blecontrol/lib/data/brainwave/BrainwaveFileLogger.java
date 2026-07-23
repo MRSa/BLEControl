@@ -41,7 +41,7 @@ public class BrainwaveFileLogger
     {
         try
         {
-            SimpleLogDumper.dump_bytes("RECV [" + data.length + "] ", data);
+            SimpleLogDumper.Companion.dumpBytes("RECV [" + data.length + "] ", data);
             if ((outputStream != null)&&(data.length >= 36))
             {
                 outputStream.write(data, 0, 36);

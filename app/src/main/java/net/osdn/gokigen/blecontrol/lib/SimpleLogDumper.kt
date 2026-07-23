@@ -1,78 +1,74 @@
-package net.osdn.gokigen.blecontrol.lib;
+package net.osdn.gokigen.blecontrol.lib
 
-import android.app.Activity;
-import android.os.Environment;
-import android.util.Log;
+import android.app.Activity
+import android.os.Environment
+import android.util.Log
+import net.osdn.gokigen.blecontrol.lib.ble.R
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
-import androidx.annotation.NonNull;
-
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-
-public class SimpleLogDumper
+class SimpleLogDumper
 {
-    private static final String TAG = SimpleLogDumper.class.getSimpleName();
+    companion object {
+        private val TAG: String = SimpleLogDumper::class.java.getSimpleName()
 
-    /**
-     *   デバッグ用：ログにバイト列を出力する
-     *
-     */
-    public static void dump_bytes(String header, byte[] data)
-    {
-        if (data == null)
-        {
-            Log.v(TAG, "DATA IS NULL");
-            return;
-        }
-        if (data.length > 8192)
-        {
-            Log.v(TAG, " --- DUMP DATA IS TOO LONG... " + data.length + " bytes.");
-            return;
-        }
-
-        int index = 0;
-        StringBuilder message;
-        message = new StringBuilder();
-        for (byte item : data)
-        {
-            index++;
-            message.append(String.format("%02x ", item));
-            if (index >= 16)
-            {
-                Log.v(TAG, header + " " + message);
-                index = 0;
-                message = new StringBuilder();
+        /**
+         * デバッグ用：ログにバイト列を出力する
+         */
+        fun dumpBytes(header: String?, data: ByteArray?) {
+            if (data == null) {
+                Log.v(TAG, "DATA IS NULL")
+                return
             }
-        }
-        if (index != 0)
-        {
-            Log.v(TAG, header + " " + message);
-        }
-        System.gc();
-    }
+            if (data.size > 8192) {
+                Log.v(TAG, " --- DUMP DATA IS TOO LONG... " + data.size + " bytes.")
+                return
+            }
 
-    public static void binaryOutputToFile(@NonNull Activity activity, String fileNamePrefix, byte[] rx_body)
-    {
-        try
-        {
-            Calendar calendar = Calendar.getInstance();
-            String extendName = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault()).format(calendar.getTime());
-            final String directoryPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath() + "/" + activity.getString(R.string.app_name2) + "/";
-            String outputFileName = fileNamePrefix + "_" + extendName + ".bin";
-            String filepath = new File(directoryPath.toLowerCase(), outputFileName.toLowerCase()).getPath();
-            FileOutputStream outputStream = new FileOutputStream(filepath);
-            outputStream.write(rx_body, 0, rx_body.length);
-            outputStream.flush();
-            outputStream.close();
+            var index = 0
+            var message: StringBuilder?
+            message = StringBuilder()
+            for (item in data) {
+                index++
+                message!!.append(String.format("%02x ", item))
+                if (index >= 16) {
+                    Log.v(TAG, "$header $message")
+                    index = 0
+                    message = StringBuilder()
+                }
+            }
+            if (index != 0) {
+                Log.v(TAG, "$header $message")
+            }
+            System.gc()
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+
+        fun binaryOutputToFile(activity: Activity, fileNamePrefix: String?, rx_body: ByteArray) {
+            try {
+                val calendar: Calendar = Calendar.getInstance()
+                val extendName: String? =
+                    SimpleDateFormat(
+                        "yyyyMMdd-HHmmss",
+                        Locale.getDefault()
+                    ).format(calendar.getTime())
+                val directoryPath =
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
+                        .path + "/" + activity.getString(R.string.app_name2) + "/"
+                val outputFileName = fileNamePrefix + "_" + extendName + ".bin"
+                val filepath = File(
+                    directoryPath.lowercase(Locale.getDefault()),
+                    outputFileName.lowercase(Locale.getDefault())
+                ).path
+                val outputStream = FileOutputStream(filepath)
+                outputStream.write(rx_body, 0, rx_body.size)
+                outputStream.flush()
+                outputStream.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }

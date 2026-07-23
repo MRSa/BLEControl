@@ -21,6 +21,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import net.osdn.gokigen.blecontrol.lib.ble.MyBleAdapter;
+import net.osdn.gokigen.blecontrol.lib.ble.MyBleDevice;
 import net.osdn.gokigen.blecontrol.lib.ble.R;
 import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveDataHolder;
 
@@ -29,15 +30,18 @@ import java.util.List;
 public class BrainwaveMobileFragment extends Fragment implements BrainwaveConnection.SelectDevice
 {
     private final String TAG = toString();
-    private List<String> bondedDeviceList = null;
+    private List<MyBleDevice> bondedDeviceList = null;
     private BrainwaveDataHolder dataHolder = null;
     private int selectedDevicePosition = 0;
+    private MyBleAdapter bleAdapter = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         final BrainwaveMobileViewModel brainwaveViewModel = ViewModelProviders.of(this).get(BrainwaveMobileViewModel.class);
         View root = inflater.inflate(R.layout.fragment_brainwave, container, false);
         final BrainwaveRawGraphView cameraLiveImageView = root.findViewById(R.id.cameraLiveImageView);
+        bleAdapter = new MyBleAdapter(getActivity());
+        bleAdapter.prepare();
         dataHolder = new BrainwaveDataHolder(cameraLiveImageView, 16000);
         cameraLiveImageView.setDataHolder(dataHolder);
         final TextView textView = root.findViewById(R.id.text_brainwave);
@@ -78,14 +82,16 @@ public class BrainwaveMobileFragment extends Fragment implements BrainwaveConnec
      * @param context  context
      * @param root     view root
      */
-    private void prepareDeviceSelection(@NonNull Context context, @NonNull View root)
+    private void prepareDeviceSelection(@NonNull FragmentActivity context, @NonNull View root)
     {
         try
         {
             final Spinner selection_device = root.findViewById(R.id.spinner_selection_eeg_device);
             ArrayAdapter<String> adapter = new ArrayAdapter<>(context,android.R.layout.simple_spinner_item);
-            bondedDeviceList = MyBleAdapter.getBondedDevices();
-            adapter.addAll(bondedDeviceList);
+            bondedDeviceList = bleAdapter.getBondedDeviceList();
+            for (MyBleDevice device : bondedDeviceList) {
+                adapter.add(device.getName());
+            }
             selection_device.setAdapter(adapter);
             selection_device.setSelection(selectedDevicePosition);
             selection_device.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
@@ -123,7 +129,7 @@ public class BrainwaveMobileFragment extends Fragment implements BrainwaveConnec
         String deviceName = "";
         try
         {
-            deviceName = bondedDeviceList.get(selectedDevicePosition);
+            deviceName = (bondedDeviceList.get(selectedDevicePosition)).getName();
         }
         catch (Exception e)
         {

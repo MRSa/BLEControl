@@ -1,236 +1,182 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connect.eeg;
+package net.osdn.gokigen.blecontrol.lib.ble.connect.eeg
 
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.os.Build;
-import android.util.Log;
-import androidx.fragment.app.FragmentActivity;
-import androidx.annotation.NonNull;
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.ble.connect.BleDeviceFinder;
-import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
-import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveFileLogger;
-import net.osdn.gokigen.blecontrol.lib.data.brainwave.IBrainwaveDataReceiver;
+import android.Manifest
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothSocket
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresPermission
+import androidx.fragment.app.FragmentActivity
+import net.osdn.gokigen.blecontrol.lib.ble.R
+import net.osdn.gokigen.blecontrol.lib.ble.connect.BleDeviceFinder
+import net.osdn.gokigen.blecontrol.lib.ble.connect.BleDeviceFinder.BleScanResult
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveFileLogger
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.IBrainwaveDataReceiver
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.util.UUID
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.UUID;
 
+class MindWaveCommunication(
+    private val context: FragmentActivity,
+    private val dataUpdater: ITextDataUpdater,
+    private val dataReceiver: IBrainwaveDataReceiver
+) : BleScanResult {
+    private val TAG: String = toString()
 
-public class MindWaveCommunication implements BleDeviceFinder.BleScanResult
-{
-    private final String TAG = toString();
+    private var deviceFinder: BleDeviceFinder? = null
+    private var fileLogger: BrainwaveFileLogger? = null
+    private var foundDevice = false
+    private var loggingFlag = false
 
-    private final FragmentActivity context;
-    private final ITextDataUpdater dataUpdater;
-    private final IBrainwaveDataReceiver dataReceiver;
-    private BleDeviceFinder deviceFinder = null;
-    private BrainwaveFileLogger fileLogger = null;
-    private boolean foundDevice = false;
-    private boolean loggingFlag = false;
-
-    public MindWaveCommunication(@NonNull FragmentActivity context, @NonNull ITextDataUpdater dataUpdater, @NonNull IBrainwaveDataReceiver dataReceiver)
-    {
-        this.context = context;
-        this.dataUpdater = dataUpdater;
-        this.dataReceiver = dataReceiver;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-        {
-            this.deviceFinder = new BleDeviceFinder(context, dataUpdater, this);
+    init {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            this.deviceFinder = BleDeviceFinder(context, dataUpdater, this)
         }
     }
 
-    public void connect(@NonNull String deviceName, boolean loggingFlag)
-    {
-        Log.v(TAG, " BrainWaveMobileCommunicator::connect() : " + deviceName + " Logging : " + loggingFlag);
-        setText(context.getString(R.string.start_query) + " '" + deviceName + "'");
-        try
-        {
-            this.loggingFlag = loggingFlag;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-            {
+    fun connect(deviceName: String, loggingFlag: Boolean) {
+        Log.v(
+            TAG,
+            " BrainWaveMobileCommunicator::connect() : $deviceName Logging : $loggingFlag"
+        )
+        setText(context.getString(R.string.start_query) + " '" + deviceName + "'")
+        try {
+            this.loggingFlag = loggingFlag
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 // BLE のサービスを取得
-                if (deviceFinder != null)
-                {
+                if (deviceFinder != null) {
                     // BLEデバイスをスキャンする
-                    foundDevice = false;
-                    deviceFinder.reset();
-                    deviceFinder.startScan(deviceName);
+                    foundDevice = false
+                    deviceFinder!!.reset()
+                    deviceFinder!!.startScan(deviceName)
                 }
-            }
-            else
-            {
+            } else {
                 // Androidのバージョンが低かった
-                dataUpdater.showSnackBar(R.string.not_support_android_version);
+                dataUpdater.showSnackBar(R.string.not_support_android_version)
             }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    private void setText(@NonNull final String message)
-    {
-        dataUpdater.setText(message);
+    private fun setText(message: String) {
+        dataUpdater.setText(message)
     }
 
-    private void addText(@NonNull final String message)
-    {
-        dataUpdater.addText(message);
+    private fun addText(message: String) {
+        dataUpdater.addText(message)
     }
 
-    private void parseReceivedData(byte[] data)
-    {
+    private fun parseReceivedData(data: ByteArray) {
         // 受信データブロック１つ分
-        try
-        {
-            if (data.length <= 3)
-            {
+        try {
+            if (data.size <= 3) {
                 // ヘッダ部しか入っていない...無視する
-                return;
+                return
             }
-            byte length = data[2];
-            if (data.length < (length + 2))
-            {
+            val length = data[2]
+            if (data.size < (length + 2)) {
                 // データが最小サイズに満たない...無視する
-                return;
+                return
             }
 
-            if ((data.length == 8)||(data.length == 9))
-            {
-                int value = ((data[5] & 0xff) * 256) + (data[6] & 0xff);
-                if (value > 32768)
-                {
-                    value = value - 65536;
+            if ((data.size == 8) || (data.size == 9)) {
+                var value = ((data[5].toInt() and 0xff) * 256) + (data[6].toInt() and 0xff)
+                if (value > 32768) {
+                    value = value - 65536
                 }
-                dataReceiver.receivedRawData(value);
-                return;
+                dataReceiver.receivedRawData(value)
+                return
             }
-            dataReceiver.receivedSummaryData(data);
-            if (fileLogger != null)
-            {
+            dataReceiver.receivedSummaryData(data)
+            if (fileLogger != null) {
                 // ファイルにサマリーデータを出力する
-                fileLogger.outputSummaryData(data);
+                fileLogger!!.outputSummaryData(data)
             }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
 
-    private void serialCommunicationMain(final BluetoothSocket btSocket)
-    {
-        InputStream inputStream = null;
-        try
-        {
-            btSocket.connect();
-            inputStream = btSocket.getInputStream();
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private fun serialCommunicationMain(btSocket: BluetoothSocket) {
+        var inputStream: InputStream? = null
+        try {
+            btSocket.connect()
+            inputStream = btSocket.getInputStream()
+        } catch (e: Exception) {
+            Log.e(TAG, "Fail to accept.", e)
         }
-        catch (Exception e)
-        {
-
-            Log.e(TAG, "Fail to accept.", e);
-        }
-        if (inputStream == null)
-        {
-            return;
+        if (inputStream == null) {
+            return
         }
 
-        if (loggingFlag)
-        {
-            try
-            {
+        if (loggingFlag) {
+            try {
                 // ログ出力を指示されていた場合...ファイル出力クラスを作成しておく
-                fileLogger = new BrainwaveFileLogger(context);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
+                fileLogger = BrainwaveFileLogger(context)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
 
         // シリアルデータの受信メイン部分
-        byte previousData = (byte) 0xff;
-        ByteArrayOutputStream outputStream = null;
-        while (foundDevice)
-        {
-            try
-            {
-                int data = inputStream.read();
-                byte byteData = (byte) (data & 0xff);
-                if ((previousData == byteData)&&(byteData == (byte) 0xaa))
-                {
+        var previousData = 0xff.toByte()
+        var outputStream: ByteArrayOutputStream? = null
+        while (foundDevice) {
+            try {
+                val data = inputStream.read()
+                val byteData = (data and 0xff).toByte()
+                if ((previousData == byteData) && (byteData == 0xaa.toByte())) {
                     // 先頭データを見つけた。 （0xaa 0xaa がヘッダ）
-                    if (outputStream != null)
-                    {
-                        parseReceivedData(outputStream.toByteArray());
-                        outputStream = null;
+                    if (outputStream != null) {
+                        parseReceivedData(outputStream.toByteArray())
+                        outputStream = null
                     }
-                    outputStream = new ByteArrayOutputStream();
-                    outputStream.write((byte) 0xaa);
-                    outputStream.write((byte) 0xaa);
+                    outputStream = ByteArrayOutputStream()
+                    outputStream.write(0xaa.toByte().toInt())
+                    outputStream.write(0xaa.toByte().toInt())
+                } else {
+                    outputStream?.write(byteData.toInt())
                 }
-                else
-                {
-                    if (outputStream != null)
-                    {
-                        outputStream.write(byteData);
-                    }
-                }
-                previousData = byteData;
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
+                previousData = byteData
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
-        try
-        {
-            btSocket.close();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+        try {
+            btSocket.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    @Override
-    public void foundBleDevice(BluetoothDevice device)
-    {
-        try
-        {
-            if (foundDevice)
-            {
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun foundBleDevice(device: BluetoothDevice) {
+        try {
+            if (foundDevice) {
                 // すでに見つかっている
-                Log.v(TAG, " ALREADY FIND.");
-                return;
+                Log.v(TAG, " ALREADY FIND.")
+                return
             }
-            foundDevice = true;
-            final BluetoothSocket btSocket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try
-                    {
-                        serialCommunicationMain(btSocket);
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
+            foundDevice = true
+            val btSocket =
+                device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+            val thread = Thread {
+                try {
+                    serialCommunicationMain(btSocket!!)
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-            });
-            if (btSocket != null)
-            {
-                thread.start();
             }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            if (btSocket != null) {
+                thread.start()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

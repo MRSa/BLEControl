@@ -1,37 +1,25 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connect;
+package net.osdn.gokigen.blecontrol.lib.ble.connect
 
 class CameraBleSetArrayItem
-{
-    private final String dataId;
-    private String btName;
-    private String btPassCode;
-    private String information;
-
-    CameraBleSetArrayItem(String dataId, String name, String passCode, String information)
-    {
-        this.dataId = dataId;
-        this.btName = name;
-        this.btPassCode = passCode;
-        this.information = information;
+    (
+    private val dataId: String?,
+    private val btName: String?,
+    private val btPassCode: String?,
+    private val information: String?
+) {
+    fun getDataId(): String? {
+        return (dataId)
     }
 
-    String getDataId()
-    {
-        return (dataId);
+    fun getBtName(): String? {
+        return (btName)
     }
 
-    String getBtName()
-    {
-        return (btName);
+    fun getBtPassCode(): String? {
+        return (btPassCode)
     }
 
-    String getBtPassCode()
-    {
-        return (btPassCode);
-    }
-
-    String getInformation()
-    {
-        return (information);
+    fun getInformation(): String? {
+        return (information)
     }
 }

@@ -1,7 +1,5 @@
-package net.osdn.gokigen.blecontrol.lib.ui.brainwave;
+package net.osdn.gokigen.blecontrol.lib.ui.brainwave
 
-public interface IBrainwaveDataDrawer
-{
-    void drawGraph();
-
+interface IBrainwaveDataDrawer {
+    fun drawGraph()
 }

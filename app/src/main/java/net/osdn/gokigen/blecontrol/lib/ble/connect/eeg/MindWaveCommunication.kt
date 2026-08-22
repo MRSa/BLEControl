@@ -155,7 +155,7 @@ class MindWaveCommunication(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun foundBleDevice(device: BluetoothDevice) {
+    override fun foundBleDevice(device: BluetoothDevice?) {
         try {
             if (foundDevice) {
                 // すでに見つかっている
@@ -164,7 +164,7 @@ class MindWaveCommunication(
             }
             foundDevice = true
             val btSocket =
-                device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+                device?.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
             val thread = Thread {
                 try {
                     serialCommunicationMain(btSocket!!)

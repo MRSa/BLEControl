@@ -1,138 +1,116 @@
-package net.osdn.gokigen.blecontrol.lib.ui.settings.bluetooth;
+package net.osdn.gokigen.blecontrol.lib.ui.settings.bluetooth
 
-import android.app.Activity;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
+import android.app.Activity
+import android.preference.PreferenceManager
+import android.util.Log
+import android.view.View
+import android.view.View.OnLongClickListener
+import android.widget.EditText
+import androidx.fragment.app.Fragment
+import net.osdn.gokigen.blecontrol.lib.ble.R
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ICameraBleProperty
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ICameraPowerOn
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ICameraPowerOn.PowerOnCameraCallback
+import net.osdn.gokigen.blecontrol.lib.ble.connect.PowerOnCamera
+import java.text.DateFormat
+import java.util.Date
+import java.util.Locale
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
+class ConnectViaBluetooth internal constructor(private val fragment: Fragment) :
+    OnLongClickListener, View.OnClickListener, PowerOnCameraCallback {
+    private val TAG = toString()
 
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.ble.connect.ICameraBleProperty;
-import net.osdn.gokigen.blecontrol.lib.ble.connect.ICameraPowerOn;
-import net.osdn.gokigen.blecontrol.lib.ble.connect.PowerOnCamera;
-
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Locale;
-
-public class ConnectViaBluetooth implements View.OnLongClickListener, View.OnClickListener, ICameraPowerOn.PowerOnCameraCallback
-{
-    private final String TAG = toString();
-    private final Fragment fragment;
-
-    ConnectViaBluetooth(@NonNull Fragment fragment)
-    {
-        this.fragment = fragment;
-
-        setBleCameraSet(1, "B500_21028637", "164309", "DEFAULT");
+    init {
+        setBleCameraSet(1, "B500_21028637", "164309", "DEFAULT")
     }
 
-    @Override
-    public boolean onLongClick(View view)
-    {
-        Log.v(TAG, " onLongClick()");
+    override fun onLongClick(view: View?): Boolean {
+        Log.v(TAG, " onLongClick()")
 
-        return false;
+        return false
     }
 
-    @Override
-    public void onClick(View view)
-    {
-        Log.v(TAG, " onClick()");
+    override fun onClick(view: View?) {
+        Log.v(TAG, " onClick()")
 
-        Activity activity = fragment.getActivity();
-        if (activity != null)
-        {
-            EditText deviceName = activity.findViewById(R.id.deviceName);
-            EditText devicePass = activity.findViewById(R.id.devicePass);
+        val activity: Activity? = fragment.getActivity()
+        if (activity != null) {
+            val deviceName = activity.findViewById<EditText?>(R.id.deviceName)
+            val devicePass = activity.findViewById<EditText?>(R.id.devicePass)
 
-            final PowerOnCamera connection = new PowerOnCamera(activity);
-            final String device = (deviceName == null) ? "" :  deviceName.getText().toString();
-            final String pass = (devicePass == null) ? "" :  devicePass.getText().toString();
+            val connection = PowerOnCamera(activity)
+            val device = if (deviceName == null) "" else deviceName.getText().toString()
+            val pass = if (devicePass == null) "" else devicePass.getText().toString()
 
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try
-                    {
-                        startPowerOnCamera(connection, device, pass);
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
+            val thread = Thread(object : Runnable {
+                override fun run() {
+                    try {
+                        startPowerOnCamera(connection, device, pass)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
                 }
-            });
-            try
-            {
-                thread.start();
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
+            })
+            try {
+                thread.start()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
 
-    private void startPowerOnCamera(ICameraPowerOn connection, String deviceName, String passCode)
-    {
-        try
-        {
-            Log.v(TAG, " startPowerOnCamera()");
-            Log.v(TAG, " device Name : " + deviceName + "  pass : " + passCode);
+    private fun startPowerOnCamera(
+        connection: ICameraPowerOn,
+        deviceName: String?,
+        passCode: String?
+    ) {
+        try {
+            Log.v(TAG, " startPowerOnCamera()")
+            Log.v(TAG, " device Name : " + deviceName + "  pass : " + passCode)
 
-            setBleCameraSet(2, deviceName, passCode, "INFO");
+            setBleCameraSet(2, deviceName, passCode, "INFO")
 
-            connection.wakeup(this);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            connection.wakeup(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    @Override
-    public void wakeupExecuted(boolean isExecute)
-    {
-        Log.v(TAG, " wakeupExecuted() : " + isExecute);
+    override fun wakeupExecuted(isExecute: Boolean) {
+        Log.v(TAG, " wakeupExecuted() : " + isExecute)
     }
 
     /**
-     *   index : 1 ～ ICameraBleProperty.MAX_STORE_PROPERTIES
-     *   name  : device name
-     *   code  : passcode
-     *   info  : information
+     * index : 1 ～ ICameraBleProperty.MAX_STORE_PROPERTIES
+     * name  : device name
+     * code  : passcode
+     * info  : information
      */
-    private void setBleCameraSet(int index, String name, String code, String info)
-    {
-        String id = String.format(Locale.ENGLISH, "%03d", index);
+    private fun setBleCameraSet(index: Int, name: String?, code: String?, info: String?) {
+        val id = String.format(Locale.ENGLISH, "%03d", index)
 
-        String namePrefKey = id + ICameraBleProperty.NAME_KEY;
-        String codePrefKey = id + ICameraBleProperty.CODE_KEY;
-        String infoPrefKey = id + ICameraBleProperty.DATE_KEY;
+        val namePrefKey = id + ICameraBleProperty.NAME_KEY
+        val codePrefKey = id + ICameraBleProperty.CODE_KEY
+        val infoPrefKey = id + ICameraBleProperty.DATE_KEY
 
-        DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-        String dateInfo = dateFormat.format(new Date());
+        val dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+        val dateInfo = dateFormat.format(Date())
 
-        try
-        {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(fragment.getActivity());
-            SharedPreferences.Editor editor = preferences.edit();
+        try {
+            val preferences = PreferenceManager.getDefaultSharedPreferences(fragment.getActivity())
+            val editor = preferences.edit()
 
-            editor.putString(namePrefKey, name);
-            editor.putString(codePrefKey, code);
-            editor.putString(infoPrefKey, dateInfo);
+            editor.putString(namePrefKey, name)
+            editor.putString(codePrefKey, code)
+            editor.putString(infoPrefKey, dateInfo)
 
-            editor.apply();
+            editor.apply()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        Log.v(TAG, "setBleCameraSet() REGISTERED : [" + id + "] " + name + " " + code + " " + dateInfo + " (" + info + ")");
+        Log.v(
+            TAG,
+            "setBleCameraSet() REGISTERED : [" + id + "] " + name + " " + code + " " + dateInfo + " (" + info + ")"
+        )
     }
 }

@@ -1,13 +1,11 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connect;
+package net.osdn.gokigen.blecontrol.lib.ble.connect
 
-public interface ICameraPowerOn
-{
+interface ICameraPowerOn {
     // カメラ起動指示
-    void wakeup(PowerOnCameraCallback callback);
+    fun wakeup(callback: PowerOnCameraCallback)
 
     // 実行終了時のコールバックのインタフェース
-    interface PowerOnCameraCallback
-    {
-        void wakeupExecuted(boolean isExecute);
+    interface PowerOnCameraCallback {
+        fun wakeupExecuted(isExecute: Boolean)
     }
 }

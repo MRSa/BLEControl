@@ -1,34 +1,24 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connect;
+package net.osdn.gokigen.blecontrol.lib.ble.connect
 
-import android.app.Activity;
-
-import androidx.annotation.NonNull;
+import android.app.Activity
 
 /**
- *   Olympus AIR の Bluetooth設定を記録する
- *
- *
+ * Olympus AIR の Bluetooth設定を記録する
+ * 
+ * 
  */
-public class OlyCameraPowerOnSelector
-{
-    private final String TAG = toString();
-    private final Activity activity;
+class OlyCameraPowerOnSelector
+
+/**
+ * コンストラクタ
+ * 
+ */(private val activity: Activity) {
+    private val TAG = toString()
 
 
-    /**
-     *   コンストラクタ
-     *
-     */
-    public OlyCameraPowerOnSelector(@NonNull Activity context)
-    {
-        this.activity = context;
-    }
-
-    public void showBleSettingDialog()
-    {
-        try
-        {
-/*
+    fun showBleSettingDialog() {
+        try {
+            /*
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity);
             // Bluetooth設定登録用ダイアログを表示する
             CameraBleEntryListDialog dialogFragment = CameraBleEntryListDialog.newInstance(activity.getString(R.string.pref_ble_settings), activity.getString(R.string.pref_summary_ble_settings));
@@ -36,10 +26,8 @@ public class OlyCameraPowerOnSelector
             dialogFragment.setShowsDialog(true);
             dialogFragment.show();
 */
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-     }
+    }
 }

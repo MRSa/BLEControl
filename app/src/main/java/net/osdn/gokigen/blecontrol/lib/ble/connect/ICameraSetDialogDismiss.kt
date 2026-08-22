@@ -1,7 +1,6 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connect;
+package net.osdn.gokigen.blecontrol.lib.ble.connect
 
 
-public interface ICameraSetDialogDismiss
-{
-    void setOlyCameraSet(String id, String name, String code, String info);
+interface ICameraSetDialogDismiss {
+    fun setOlyCameraSet(id: String?, name: String?, code: String?, info: String?)
 }

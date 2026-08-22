@@ -1,56 +1,49 @@
-package net.osdn.gokigen.blecontrol.lib.data.brainwave;
+package net.osdn.gokigen.blecontrol.lib.data.brainwave
 
-import android.os.Environment;
+import android.os.Environment
+import androidx.fragment.app.FragmentActivity
+import net.osdn.gokigen.blecontrol.lib.SimpleLogDumper.Companion.dumpBytes
+import net.osdn.gokigen.blecontrol.lib.ble.R
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
+class BrainwaveFileLogger
+    (context: FragmentActivity) {
+    private var outputStream: FileOutputStream? = null
 
-import net.osdn.gokigen.blecontrol.lib.SimpleLogDumper;
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-
-public class BrainwaveFileLogger
-{
-    private FileOutputStream outputStream;
-
-    public BrainwaveFileLogger(@NonNull FragmentActivity context)
-    {
-        try
-        {
-            String fileNamePrefix = context.getString(R.string.app_name2) + "_EEG";
-            Calendar calendar = Calendar.getInstance();
-            String extendName = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault()).format(calendar.getTime());
-            final String directoryPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/";
-            String outputFileName = fileNamePrefix + "_" + extendName + ".bin";
-            String filepath = new File(directoryPath.toLowerCase(), outputFileName.toLowerCase()).getPath();
-            outputStream = new FileOutputStream(filepath);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            outputStream = null;
+    init {
+        try {
+            val fileNamePrefix = context.getString(R.string.app_name2) + "_EEG"
+            val calendar = Calendar.getInstance()
+            val extendName =
+                SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault()).format(calendar.getTime())
+            val directoryPath =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    .getPath() + "/"
+            val outputFileName = fileNamePrefix + "_" + extendName + ".bin"
+            val filepath = File(
+                directoryPath.lowercase(Locale.getDefault()),
+                outputFileName.lowercase(Locale.getDefault())
+            ).getPath()
+            outputStream = FileOutputStream(filepath)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            outputStream = null
         }
     }
 
-    public void outputSummaryData(byte[] data)
-    {
-        try
-        {
-            SimpleLogDumper.Companion.dumpBytes("RECV [" + data.length + "] ", data);
-            if ((outputStream != null)&&(data.length >= 36))
-            {
-                outputStream.write(data, 0, 36);
-                outputStream.flush();
+    fun outputSummaryData(data: ByteArray) {
+        try {
+            dumpBytes("RECV [" + data.size + "] ", data)
+            if ((outputStream != null) && (data.size >= 36)) {
+                outputStream!!.write(data, 0, 36)
+                outputStream!!.flush()
             }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

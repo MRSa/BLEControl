@@ -1,17 +1,18 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connect;
+package net.osdn.gokigen.blecontrol.lib.ble.connect
 
 /**
- *  Bluetooth のプロパティにアクセスするインタフェース
- *
+ * Bluetooth のプロパティにアクセスするインタフェース
+ * 
  */
-public interface ICameraBleProperty
-{
-    int MAX_STORE_PROPERTIES = 12;  // Olympus Airは、最大12個登録可能
+interface ICameraBleProperty {
+    companion object {
+        const val MAX_STORE_PROPERTIES: Int = 12 // Olympus Airは、最大12個登録可能
 
-    String CAMERA_BLUETOOTH_SETTINGS = "camera_bluetooth_settings";
-    String CAMERA_BLUETOOTH_POWER_ON = "ble_power_on";
+        const val CAMERA_BLUETOOTH_SETTINGS: String = "camera_bluetooth_settings"
+        const val CAMERA_BLUETOOTH_POWER_ON: String = "ble_power_on"
 
-    String NAME_KEY = "AirBtName";
-    String CODE_KEY = "AirBtCode";
-    String DATE_KEY = "AirBtId";
+        const val NAME_KEY: String = "AirBtName"
+        const val CODE_KEY: String = "AirBtCode"
+        const val DATE_KEY: String = "AirBtId"
+    }
 }

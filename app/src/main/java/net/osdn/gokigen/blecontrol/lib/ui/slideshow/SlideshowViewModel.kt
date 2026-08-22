@@ -1,19 +1,17 @@
-package net.osdn.gokigen.blecontrol.lib.ui.slideshow;
+package net.osdn.gokigen.blecontrol.lib.ui.slideshow
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 
-public class SlideshowViewModel extends ViewModel {
+class SlideshowViewModel : ViewModel() {
+    private val mText: MutableLiveData<String?>?
 
-    private MutableLiveData<String> mText;
-
-    public SlideshowViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is slideshow fragment");
+    init {
+        mText = MutableLiveData<String?>()
+        mText.setValue("This is slideshow fragment")
     }
 
-    public LiveData<String> getText() {
-        return mText;
-    }
+    val text: LiveData<String?>?
+        get() = mText
 }

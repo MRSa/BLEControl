@@ -1,201 +1,141 @@
-package net.osdn.gokigen.blecontrol.lib.ui.fv100;
+package net.osdn.gokigen.blecontrol.lib.ui.fv100
 
-import android.util.Log;
-import android.view.View;
-import android.widget.ImageButton;
+import android.util.Log
+import android.view.View
+import android.widget.ImageButton
+import androidx.fragment.app.FragmentActivity
+import net.osdn.gokigen.blecontrol.lib.ble.R
+import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater
+import net.osdn.gokigen.blecontrol.lib.ble.connect.fv100.FV100BleDeviceConnector
+import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage
+import net.osdn.gokigen.blecontrol.lib.ui.fv100.FV100PropertySetting.PropertySetter
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
+class FV100DeviceQuery internal constructor(
+    private val context: FragmentActivity,
+    private val deviceInfo: DeviceInfo,
+    private val viewModel: FV100ViewModel
+) : View.OnClickListener, ITextDataUpdater, PropertySetter {
+    private val TAG = toString()
+    private val deviceConnector: FV100BleDeviceConnector = FV100BleDeviceConnector(context, this)
+    private val messageToShow: SnackBarMessage
 
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.ble.connect.ITextDataUpdater;
-import net.osdn.gokigen.blecontrol.lib.ble.connect.fv100.FV100BleDeviceConnector;
-import net.osdn.gokigen.blecontrol.lib.ui.SnackBarMessage;
-
-public class FV100DeviceQuery implements View.OnClickListener, ITextDataUpdater, FV100PropertySetting.PropertySetter
-{
-    private String TAG = toString();
-    private final FragmentActivity context;
-    private final DeviceInfo deviceInfo;
-    private final FV100ViewModel viewModel;
-    private final FV100BleDeviceConnector deviceConnector;
-    private final SnackBarMessage messageToShow;
-
-    FV100DeviceQuery(@NonNull FragmentActivity context, @NonNull DeviceInfo deviceInfo, @NonNull FV100ViewModel viewModel)
-    {
-        this.context = context;
-        this.deviceInfo = deviceInfo;
-        this.viewModel = viewModel;
-        this.deviceConnector = new FV100BleDeviceConnector(context, this);
-        this.messageToShow = new SnackBarMessage(context, false);
+    init {
+        this.messageToShow = SnackBarMessage(context, false)
     }
 
-    private void deviceQuery()
-    {
-        try
-        {
-            final String deviceName = deviceInfo.getQueryDeviceName();
-            viewModel.setText(context.getString(R.string.start_query)+ " '" + deviceName + "'");
-            if (deviceName.length() > 1)
-            {
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        deviceConnector.query_to_device(deviceName);
+    private fun deviceQuery() {
+        try {
+            val deviceName = deviceInfo.getQueryDeviceName()
+            viewModel.setText(context.getString(R.string.start_query) + " '" + deviceName + "'")
+            if (deviceName.length > 1) {
+                val thread = Thread(object : Runnable {
+                    override fun run() {
+                        deviceConnector.query_to_device(deviceName)
                     }
-                });
-                thread.start();
+                })
+                thread.start()
             }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    private void dataReload()
-    {
-        try
-        {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    deviceConnector.reload_device_information();
+    private fun dataReload() {
+        try {
+            val thread = Thread(object : Runnable {
+                override fun run() {
+                    deviceConnector.reload_device_information()
                 }
-            });
-            thread.start();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            })
+            thread.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    private void connectToCamera()
-    {
-        try
-        {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    deviceConnector.connect_to_camera_via_wifi();
+    private fun connectToCamera() {
+        try {
+            val thread = Thread(object : Runnable {
+                override fun run() {
+                    deviceConnector.connect_to_camera_via_wifi()
                 }
-            });
-            thread.start();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            })
+            thread.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    @Override
-    public void onClick(@NonNull View v)
-    {
-        int id = v.getId();
-        switch (id)
-        {
-            case R.id.query_to_device:
-                deviceQuery();
-                break;
-
-            case R.id.reload_button:
-                dataReload();
-                break;
-
-            case R.id.wifi_connect_button:
-                connectToCamera();
-                break;
-
-            default:
-                Log.v(TAG, " onClick : " + id);
-                break;
+    override fun onClick(v: View) {
+        val id = v.getId()
+        when (id) {
+            R.id.query_to_device -> deviceQuery()
+            R.id.reload_button -> dataReload()
+            R.id.wifi_connect_button -> connectToCamera()
+            else -> Log.v(TAG, " onClick : " + id)
         }
     }
 
-    @Override
-    public void setText(String data)
-    {
-        viewModel.setText(data);
+    override fun setText(data: String?) {
+        viewModel.setText(data ?:"")
     }
 
-    @Override
-    public void addText(String data)
-    {
-        viewModel.addText(data);
+    override fun addText(data: String?) {
+        viewModel.addText(data ?:"")
     }
 
-    @Override
-    public void showSnackBar(String message)
-    {
-        messageToShow.showMessage(message);
+    override fun showSnackBar(message: String?) {
+        messageToShow.showMessage(message ?:"")
     }
 
-    @Override
-    public void showSnackBar(int rscId)
-    {
-        messageToShow.showMessage(rscId);
+    override fun showSnackBar(rscId: Int) {
+        messageToShow.showMessage(rscId)
     }
 
-    @Override
-    public void enableOperation(final boolean isEnable)
-    {
-        try
-        {
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    final ImageButton wifiConnectButton = context.findViewById(R.id.wifi_connect_button);
-                    if (wifiConnectButton != null)
-                    {
-                        wifiConnectButton.setEnabled(isEnable);
-                        wifiConnectButton.setVisibility((isEnable? View.INVISIBLE : View.INVISIBLE));
+    override fun enableOperation(isEnable: Boolean) {
+        try {
+            context.runOnUiThread(object : Runnable {
+                override fun run() {
+                    val wifiConnectButton =
+                        context.findViewById<ImageButton?>(R.id.wifi_connect_button)
+                    if (wifiConnectButton != null) {
+                        wifiConnectButton.setEnabled(isEnable)
+                        wifiConnectButton.setVisibility((if (isEnable) View.INVISIBLE else View.INVISIBLE))
                     }
 
-                    final ImageButton imageSizeButton = context.findViewById(R.id.change_image_size_button);
-                    if (imageSizeButton != null)
-                    {
-                        imageSizeButton.setEnabled(isEnable);
-                        imageSizeButton.setVisibility((isEnable? View.VISIBLE : View.INVISIBLE));
+                    val imageSizeButton =
+                        context.findViewById<ImageButton?>(R.id.change_image_size_button)
+                    if (imageSizeButton != null) {
+                        imageSizeButton.setEnabled(isEnable)
+                        imageSizeButton.setVisibility((if (isEnable) View.VISIBLE else View.INVISIBLE))
                     }
 
-                    final ImageButton videoSizeButton = context.findViewById(R.id.change_video_size_button);
-                    if (videoSizeButton != null)
-                    {
-                        videoSizeButton.setEnabled(isEnable);
-                        videoSizeButton.setVisibility((isEnable? View.VISIBLE : View.INVISIBLE));
+                    val videoSizeButton =
+                        context.findViewById<ImageButton?>(R.id.change_video_size_button)
+                    if (videoSizeButton != null) {
+                        videoSizeButton.setEnabled(isEnable)
+                        videoSizeButton.setVisibility((if (isEnable) View.VISIBLE else View.INVISIBLE))
                     }
                     //Log.v(TAG, " >> ITextDataUpdater::enableOperation() : " + isEnable);
                 }
-            });
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            })
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    @Override
-    public void setProperty(@NonNull final String propertyName, @NonNull final String propertyValue)
-    {
-        try
-        {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    deviceConnector.setProperty(propertyName, propertyValue);
-                }
-            });
-            thread.start();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+    override fun setProperty(propertyName: String, propertyValue: String) {
+        try {
+            val thread = Thread @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT){
+                try { deviceConnector.setProperty(propertyName, propertyValue) } catch (_: Exception) { }
+            }
+            thread.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    interface DeviceInfo
-    {
-        String getQueryDeviceName();
+    internal interface DeviceInfo {
+        fun getQueryDeviceName(): String
     }
 }

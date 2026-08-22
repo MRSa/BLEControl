@@ -1,36 +1,32 @@
-package net.osdn.gokigen.blecontrol.lib.ui.settings.tool;
+package net.osdn.gokigen.blecontrol.lib.ui.settings.tool
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import net.osdn.gokigen.blecontrol.lib.ble.R
 
-import androidx.annotation.Nullable;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+class ToolSettingsFragment : Fragment() {
+    private var toolSettingsViewModel: ToolSettingsViewModel? = null
 
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-
-public class ToolSettingsFragment extends Fragment
-{
-
-    private ToolSettingsViewModel toolSettingsViewModel;
-
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         toolSettingsViewModel =
-                ViewModelProviders.of(this).get(ToolSettingsViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_setting_tools, container, false);
-        final TextView textView = root.findViewById(R.id.text_tools);
-        toolSettingsViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
+            ViewModelProviders.of(this)
+                .get<ToolSettingsViewModel>(ToolSettingsViewModel::class.java)
+        val root = inflater.inflate(R.layout.fragment_setting_tools, container, false)
+        val textView = root.findViewById<TextView>(R.id.text_tools)
+        toolSettingsViewModel!!.text!!.observe(getViewLifecycleOwner(), object : Observer<String?> {
+            override fun onChanged(s: String?) {
+                textView.setText(s)
             }
-        });
-        return root;
+        })
+        return root
     }
 }

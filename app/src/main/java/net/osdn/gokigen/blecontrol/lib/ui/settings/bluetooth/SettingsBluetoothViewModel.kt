@@ -1,20 +1,17 @@
-package net.osdn.gokigen.blecontrol.lib.ui.settings.bluetooth;
+package net.osdn.gokigen.blecontrol.lib.ui.settings.bluetooth
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 
-public class SettingsBluetoothViewModel extends ViewModel
-{
-    private MutableLiveData<String> mText;
+class SettingsBluetoothViewModel : ViewModel() {
+    private val mText: MutableLiveData<String?>?
 
-    public SettingsBluetoothViewModel()
-    {
-        mText = new MutableLiveData<>();
-        mText.setValue("Bluetooth Connection Test");
+    init {
+        mText = MutableLiveData<String?>()
+        mText.setValue("Bluetooth Connection Test")
     }
 
-    public LiveData<String> getText() {
-        return mText;
-    }
+    val text: LiveData<String?>?
+        get() = mText
 }

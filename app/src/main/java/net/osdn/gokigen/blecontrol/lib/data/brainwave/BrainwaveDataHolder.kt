@@ -1,105 +1,87 @@
-package net.osdn.gokigen.blecontrol.lib.data.brainwave;
+package net.osdn.gokigen.blecontrol.lib.data.brainwave
 
-import android.util.Log;
+import android.util.Log
+import net.osdn.gokigen.blecontrol.lib.ui.brainwave.IBrainwaveDataDrawer
+import java.util.Arrays
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+class BrainwaveDataHolder(
+    private val dataDrawer: IBrainwaveDataDrawer,
+    private val maxBufferSize: Int
+) : IBrainwaveDataReceiver {
+    private val TAG = toString()
 
-import net.osdn.gokigen.blecontrol.lib.ui.brainwave.IBrainwaveDataDrawer;
+    private val valueBuffer: IntArray
+    private val currentSummaryData: BrainwaveSummaryData
+    private var currentPosition: Int
+    private var bufferIsFull = false
 
-import java.util.Arrays;
+    init {
+        valueBuffer = IntArray(maxBufferSize)
+        currentPosition = 0
 
-public class BrainwaveDataHolder implements IBrainwaveDataReceiver
-{
-    private final String TAG = toString();
-
-    private final IBrainwaveDataDrawer dataDrawer;
-    private int[] valueBuffer;
-    private BrainwaveSummaryData currentSummaryData;
-    private int maxBufferSize;
-    private int currentPosition;
-    private boolean bufferIsFull = false;
-
-    public BrainwaveDataHolder(@NonNull IBrainwaveDataDrawer dataDrawer, int maxBufferSize)
-    {
-        this.dataDrawer = dataDrawer;
-        this.maxBufferSize = maxBufferSize;
-
-        valueBuffer = new int[maxBufferSize];
-        currentPosition = 0;
-
-        currentSummaryData = new BrainwaveSummaryData();
+        currentSummaryData = BrainwaveSummaryData()
     }
 
-    @Override
-    public void receivedRawData(int value)
-    {
+    override fun receivedRawData(value: Int) {
         //Log.v(TAG, " receivedRawData() : " + value);
-        try
-        {
-            valueBuffer[currentPosition] = value;
-            currentPosition++;
-            if (currentPosition == maxBufferSize)
-            {
-                currentPosition = 0;
-                bufferIsFull = true;
+        try {
+            valueBuffer[currentPosition] = value
+            currentPosition++
+            if (currentPosition == maxBufferSize) {
+                currentPosition = 0
+                bufferIsFull = true
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        dataDrawer.drawGraph();
+        dataDrawer.drawGraph()
     }
 
-    @Override
-    public void receivedSummaryData(byte[] data)
-    {
-        if (!currentSummaryData.update(data))
+    override fun receivedSummaryData(data: ByteArray?) {
+        if (data == null)
         {
+            Log.v(TAG, " FAIL : PARSE DATA IS NULL.")
+            return
+        }
+        if (!currentSummaryData.update(data)) {
             // parse failure...
-            Log.v(TAG, " FAIL : PARSE EEG SUMMARY DATA (" + data.length + ")");
+            Log.v(TAG, " FAIL : PARSE EEG SUMMARY DATA (" + data.size + ")")
         }
     }
 
-    public @NonNull BrainwaveSummaryData getSummaryData()
-    {
-        return (currentSummaryData);
-    }
+    val summaryData: BrainwaveSummaryData
+        get() = (currentSummaryData)
 
-    public @Nullable int[] getValues(int size)
-    {
-        int [] replyData = null;
-        try
-        {
-            int endPosition = currentPosition - 1;
-            if (currentPosition > size)
-            {
-                return (Arrays.copyOfRange(valueBuffer, (endPosition - size), endPosition));
+    fun getValues(size: Int): IntArray? {
+        var replyData: IntArray? = null
+        try {
+            var endPosition = currentPosition - 1
+            if (currentPosition > size) {
+                return (Arrays.copyOfRange(valueBuffer, (endPosition - size), endPosition))
             }
-            if (!bufferIsFull)
-            {
-                return (Arrays.copyOfRange(valueBuffer, 0, endPosition));
+            if (!bufferIsFull) {
+                return (Arrays.copyOfRange(valueBuffer, 0, endPosition))
             }
-            if (currentPosition == 0)
-            {
-                endPosition = (maxBufferSize - 1);
-                return (Arrays.copyOfRange(valueBuffer, (endPosition - size), endPosition));
+            if (currentPosition == 0) {
+                endPosition = (maxBufferSize - 1)
+                return (Arrays.copyOfRange(valueBuffer, (endPosition - size), endPosition))
             }
 
-            int remainSize = size - (currentPosition - 1);
-            int [] size0 = Arrays.copyOfRange(valueBuffer, 0, (currentPosition - 1));
-            int [] size1 = Arrays.copyOfRange(valueBuffer, ((maxBufferSize - 1) - remainSize), (maxBufferSize - 1));
+            val remainSize = size - (currentPosition - 1)
+            val size0 = Arrays.copyOfRange(valueBuffer, 0, (currentPosition - 1))
+            val size1 = Arrays.copyOfRange(
+                valueBuffer,
+                ((maxBufferSize - 1) - remainSize),
+                (maxBufferSize - 1)
+            )
 
-            replyData = new int[size];
+            replyData = IntArray(size)
 
-            System.arraycopy(size1, 0, replyData, 0, size1.length);
-            System.arraycopy(size0, 0, replyData, size1.length, size0.length);
+            System.arraycopy(size1, 0, replyData, 0, size1.size)
+            System.arraycopy(size0, 0, replyData, size1.size, size0.size)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return (replyData);
+        return (replyData)
     }
 }

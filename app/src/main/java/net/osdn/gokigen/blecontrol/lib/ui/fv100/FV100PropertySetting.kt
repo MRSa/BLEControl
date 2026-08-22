@@ -1,141 +1,108 @@
-package net.osdn.gokigen.blecontrol.lib.ui.fv100;
+package net.osdn.gokigen.blecontrol.lib.ui.fv100
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.util.Log;
-import android.view.View;
+import android.app.AlertDialog
+import android.content.DialogInterface
+import android.util.Log
+import android.view.View
+import androidx.fragment.app.FragmentActivity
+import net.osdn.gokigen.blecontrol.lib.ble.R
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
+class FV100PropertySetting internal constructor(
+    private val context: FragmentActivity,
+    private val propertySetter: PropertySetter
+) : View.OnClickListener {
+    private val TAG = toString()
 
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-
-public class FV100PropertySetting implements View.OnClickListener
-{
-    private String TAG = toString();
-    private final FragmentActivity context;
-    private final PropertySetter propertySetter;
-
-    FV100PropertySetting(@NonNull FragmentActivity context, @NonNull PropertySetter propertySetter)
-    {
-        this.context = context;
-        this.propertySetter = propertySetter;
-    }
-
-    @Override
-    public void onClick(@NonNull View v)
-    {
-        int id = v.getId();
-        switch (id)
-        {
-            case R.id.change_image_size_button:
-                changeImageSize();
-                break;
-
-            case R.id.change_video_size_button:
-                changeVideoSize();
-                break;
-
-            default:
-                Log.v(TAG, " onClick : " + id);
-                break;
+    override fun onClick(v: View) {
+        val id = v.getId()
+        when (id) {
+            R.id.change_image_size_button -> changeImageSize()
+            R.id.change_video_size_button -> changeVideoSize()
+            else -> Log.v(TAG, " onClick : " + id)
         }
     }
 
-    private void changeImageSize()
-    {
-        try
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle(context.getString(R.string.select_image_size));
-            builder.setCancelable(true);
-            builder.setSingleChoiceItems(R.array.photo_size, -1, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.i(TAG, " Index : " + which);
-                    try
-                    {
-                        if (which >= 0)
-                        {
-                            String[] selectionList = context.getResources().getStringArray(R.array.photo_size_value);
-                            String param = selectionList[which];
+    private fun changeImageSize() {
+        try {
+            val builder = AlertDialog.Builder(context)
+            builder.setTitle(context.getString(R.string.select_image_size))
+            builder.setCancelable(true)
+            builder.setSingleChoiceItems(
+                R.array.photo_size,
+                -1,
+                object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, which: Int) {
+                        Log.i(TAG, " Index : " + which)
+                        try {
+                            if (which >= 0) {
+                                val selectionList =
+                                    context.getResources().getStringArray(R.array.photo_size_value)
+                                val param = selectionList[which]
 
-                            // 撮影イメージサイズの変更
-                            propertySetter.setProperty("photo_size", param);
+                                // 撮影イメージサイズの変更
+                                propertySetter.setProperty("photo_size", param)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
+                        dialog.dismiss()
                     }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
+                })
+            builder.setNegativeButton(
+                R.string.btn_cancel,
+                object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, which: Int) {
+                        dialog.cancel()
                     }
-                    dialog.dismiss();
-                }
-            });
-            builder.setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(@NonNull DialogInterface dialog, int which)
-                {
-                    dialog.cancel();
-                }
-            });
-            builder.create();
-            builder.show();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+                })
+            builder.create()
+            builder.show()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    private void changeVideoSize()
-    {
-        try
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle(context.getString(R.string.select_video_resolution));
-            builder.setCancelable(true);
-            builder.setSingleChoiceItems(R.array.video_size, -1, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.i(TAG, " Index : " + which);
-                    try
-                    {
-                        if (which >= 0)
-                        {
-                            String[] selectionList = context.getResources().getStringArray(R.array.video_size_value);
-                            String param = selectionList[which];
+    private fun changeVideoSize() {
+        try {
+            val builder = AlertDialog.Builder(context)
+            builder.setTitle(context.getString(R.string.select_video_resolution))
+            builder.setCancelable(true)
+            builder.setSingleChoiceItems(
+                R.array.video_size,
+                -1,
+                object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, which: Int) {
+                        Log.i(TAG, " Index : " + which)
+                        try {
+                            if (which >= 0) {
+                                val selectionList =
+                                    context.getResources().getStringArray(R.array.video_size_value)
+                                val param = selectionList[which]
 
-                            // ビデオ撮影サイズの変更
-                            propertySetter.setProperty("video_resolution", param);
+                                // ビデオ撮影サイズの変更
+                                propertySetter.setProperty("video_resolution", param)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
+                        dialog.dismiss()
                     }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
+                })
+            builder.setNegativeButton(
+                R.string.btn_cancel,
+                object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, which: Int) {
+                        dialog.cancel()
                     }
-                    dialog.dismiss();
-                }
-            });
-            builder.setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(@NonNull DialogInterface dialog, int which)
-                {
-                    dialog.cancel();
-                }
-            });
-            builder.create();
-            builder.show();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+                })
+            builder.create()
+            builder.show()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    public interface PropertySetter
-    {
-        void setProperty(@NonNull String propertyName, @NonNull String propertyValue);
+    interface PropertySetter {
+        fun setProperty(propertyName: String, propertyValue: String)
     }
 }

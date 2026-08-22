@@ -1,32 +1,25 @@
-package net.osdn.gokigen.blecontrol.lib.ui.fv100;
+package net.osdn.gokigen.blecontrol.lib.ui.fv100
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 
-public class FV100ViewModel extends ViewModel
-{
-    private MutableLiveData<String> mText;
+class FV100ViewModel : ViewModel() {
+    private val mText: MutableLiveData<String?>
 
-    public FV100ViewModel()
-    {
-        mText = new MutableLiveData<>();
-        mText.setValue(" ");
+    init {
+        mText = MutableLiveData<String?>()
+        mText.setValue(" ")
     }
 
-    void setText(@NonNull String data)
-    {
-        mText.setValue(data);
+    fun setText(data: String) {
+        mText.setValue(data)
     }
 
-    void addText(@NonNull String data)
-    {
-        mText.setValue(mText.getValue() + data);
+    fun addText(data: String) {
+        mText.setValue(mText.getValue() + data)
     }
 
-    public LiveData<String> getText()
-    {
-        return (mText);
-    }
+    val text: LiveData<String?>?
+        get() = (mText)
 }

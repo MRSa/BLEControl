@@ -1,11 +1,10 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connect;
+package net.osdn.gokigen.blecontrol.lib.ble.connect
 
-public interface ITextDataUpdater
-{
-    void setText(String data);
-    void addText(String data);
-    void showSnackBar(String message);
-    void showSnackBar(int rscId);
+interface ITextDataUpdater {
+    fun setText(data: String?)
+    fun addText(data: String?)
+    fun showSnackBar(message: String?)
+    fun showSnackBar(rscId: Int)
 
-    void enableOperation(boolean isEnable);
+    fun enableOperation(isEnable: Boolean)
 }

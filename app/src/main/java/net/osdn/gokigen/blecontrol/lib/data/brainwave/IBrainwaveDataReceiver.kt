@@ -1,7 +1,6 @@
-package net.osdn.gokigen.blecontrol.lib.data.brainwave;
+package net.osdn.gokigen.blecontrol.lib.data.brainwave
 
-public interface IBrainwaveDataReceiver
-{
-    void receivedRawData(int value);
-    void receivedSummaryData(byte[] data);
+interface IBrainwaveDataReceiver {
+    fun receivedRawData(value: Int)
+    fun receivedSummaryData(data: ByteArray?)
 }

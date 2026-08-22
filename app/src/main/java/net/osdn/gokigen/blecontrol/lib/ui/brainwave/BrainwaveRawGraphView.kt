@@ -1,231 +1,208 @@
-package net.osdn.gokigen.blecontrol.lib.ui.brainwave;
+package net.osdn.gokigen.blecontrol.lib.ui.brainwave
 
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.View;
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.util.AttributeSet
+import android.util.Log
+import android.view.View
+import net.osdn.gokigen.blecontrol.lib.ble.R
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveDataHolder
 
-import androidx.annotation.NonNull;
+class BrainwaveRawGraphView : View, IBrainwaveDataDrawer {
+    private val TAG = this.toString()
+    private var dataHolder: BrainwaveDataHolder? = null
+    private var context: Context? = null
 
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveDataHolder;
-import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveSummaryData;
-
-public class BrainwaveRawGraphView extends View implements IBrainwaveDataDrawer
-{
-    private final String TAG = this.toString();
-    private BrainwaveDataHolder dataHolder = null;
-    private Context context = null;
-
-    public BrainwaveRawGraphView(@NonNull Context context)
-    {
-        super(context);
-        initComponent(context);
+    constructor(context: Context) : super(context) {
+        initComponent(context)
     }
 
-    public BrainwaveRawGraphView(@NonNull Context context, AttributeSet attrs)
-    {
-        super(context, attrs);
-        initComponent(context);
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        initComponent(context)
     }
 
-    public BrainwaveRawGraphView(@NonNull Context context, AttributeSet attrs, int defStyleAttr)
-    {
-        super(context, attrs, defStyleAttr);
-        initComponent(context);
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
+        initComponent(context)
     }
 
-    private void initComponent(@NonNull Context context)
-    {
-        try
-        {
-            Log.v(TAG, " initialize.");
-            this.context = context;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+    private fun initComponent(context: Context) {
+        try {
+            Log.v(TAG, " initialize.")
+            this.context = context
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    @Override
-    protected void onDraw(Canvas canvas)
-    {
-        super.onDraw(canvas);
-        drawCanvas(canvas);
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        drawCanvas(canvas)
 
         // Show Message(Overwrite)
-        drawInformationMessages(canvas);
+        drawInformationMessages(canvas)
     }
 
-    public void setDataHolder(BrainwaveDataHolder dataHolder)
-    {
-        this.dataHolder = dataHolder;
+    fun setDataHolder(dataHolder: BrainwaveDataHolder?) {
+        this.dataHolder = dataHolder
     }
 
 
-    private void drawCanvas(Canvas canvas)
-    {
-        int centerY = canvas.getHeight() / 2;
+    private fun drawCanvas(canvas: Canvas) {
+        val centerY = canvas.getHeight() / 2
 
-        float magnification = 1.0f;
-        float maxRange = 2200.0f;
+        val magnification = 1.0f
+        val maxRange = 2200.0f
 
         //Log.v(TAG, " Canvas SIZE : (" + canvas.getWidth() + "," + canvas.getHeight() +" )");
+        val rangeHeight = canvas.getHeight()
+        val rangeWidth = canvas.getWidth()
 
-        int rangeHeight = canvas.getHeight();
-        int rangeWidth = canvas.getWidth();
-
-        float resolution = ((rangeHeight / 2.0f) / maxRange);
+        val resolution = ((rangeHeight / 2.0f) / maxRange)
 
         // Clears the canvas.
-        canvas.drawARGB(255, 0, 0, 0);
+        canvas.drawARGB(255, 0, 0, 0)
 
         // 背景真ん中のライン
-        Paint bgLine = new Paint();
-        bgLine.setColor(Color.DKGRAY);
-        canvas.drawLine(0, centerY, rangeWidth, centerY, bgLine);
+        val bgLine = Paint()
+        bgLine.setColor(Color.DKGRAY)
+        canvas.drawLine(0f, centerY.toFloat(), rangeWidth.toFloat(), centerY.toFloat(), bgLine)
 
-        Paint paint = new Paint();
-        paint.setColor(Color.WHITE);
+        val paint = Paint()
+        paint.setColor(Color.WHITE)
 
-        int maxValue = 0;
-        int minValue = 0;
-        int[] values = dataHolder.getValues(rangeWidth);
-        if (values != null)
-        {
-            int pointX = 0;
+        var maxValue = 0
+        var minValue = 0
+        val values = dataHolder!!.getValues(rangeWidth)
+        if (values != null) {
+            var pointX = 0
             //magnification
-            float previousY = centerY;
-            for (int value : values)
-            {
-                float currentY = ((float)(value)) * resolution * magnification + centerY;
-                canvas.drawLine(pointX, previousY, (pointX + 1), currentY, paint);
-                pointX++;
-                previousY = currentY;
-                if (maxValue < value)
-                {
-                    maxValue = value;
+            var previousY = centerY.toFloat()
+            for (value in values) {
+                val currentY = ((value).toFloat()) * resolution * magnification + centerY
+                canvas.drawLine(
+                    pointX.toFloat(),
+                    previousY,
+                    (pointX + 1).toFloat(),
+                    currentY,
+                    paint
+                )
+                pointX++
+                previousY = currentY
+                if (maxValue < value) {
+                    maxValue = value
                 }
-                if (minValue > value)
-                {
-                    minValue = value;
+                if (minValue > value) {
+                    minValue = value
                 }
             }
         }
-        String message = "max: " + maxValue + " min: " + minValue;
+        val message = "max: " + maxValue + " min: " + minValue
         //Log.v(TAG, message);
-        canvas.drawText(message, rangeWidth - 125, 20, paint);
+        canvas.drawText(message, (rangeWidth - 125).toFloat(), 20f, paint)
 
-        paint.setColor(Color.argb(255, 32, 32, 32));
-        float lineY = ((float)(maxValue)) * resolution * magnification + centerY;
-        canvas.drawLine(0, lineY, canvas.getWidth(), lineY, paint);
+        paint.setColor(Color.argb(255, 32, 32, 32))
+        var lineY = ((maxValue).toFloat()) * resolution * magnification + centerY
+        canvas.drawLine(0f, lineY, canvas.getWidth().toFloat(), lineY, paint)
 
-        lineY = ((float)(minValue)) * resolution * magnification + centerY;
-        canvas.drawLine(0, lineY, canvas.getWidth(), lineY, paint);
+        lineY = ((minValue).toFloat()) * resolution * magnification + centerY
+        canvas.drawLine(0f, lineY, canvas.getWidth().toFloat(), lineY, paint)
     }
 
 
     /**
      * 　 画面にメッセージを表示する
      */
-    private void drawInformationMessages(Canvas canvas)
-    {
-        try
-        {
-            BrainwaveSummaryData summaryData = dataHolder.getSummaryData();
-            Paint paint = new Paint();
-            paint.setColor(Color.DKGRAY);
+    private fun drawInformationMessages(canvas: Canvas) {
+        try {
+            val summaryData = dataHolder!!.summaryData
+            val paint = Paint()
+            paint.setColor(Color.DKGRAY)
 
-            Paint.FontMetrics metrics = paint.getFontMetrics();
-            int lineHeight = (int) (metrics.bottom - metrics.top) + 2;
-            int positionY = 20;
+            val metrics = paint.getFontMetrics()
+            val lineHeight = (metrics.bottom - metrics.top).toInt() + 2
+            var positionY = 20
 
-            String message = context.getString(R.string.value_title_attention) + " " + summaryData.getAttention();
-            canvas.drawText(message, 10, positionY, paint);
-            positionY = positionY + lineHeight;
+            var message =
+                context!!.getString(R.string.value_title_attention) + " " + summaryData.getAttention()
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+            positionY = positionY + lineHeight
 
-            message = context.getString(R.string.value_title_mediation) + " " + summaryData.getMediation();
-            canvas.drawText(message, 10, positionY, paint);
-            positionY = positionY + lineHeight;
+            message =
+                context!!.getString(R.string.value_title_mediation) + " " + summaryData.getMediation()
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+            positionY = positionY + lineHeight
 
 
-            if (!summaryData.isSkinConnected())
-            {
-                paint.setColor(Color.RED);
-                String notConnectMessage = "Sensor lead is not connected.";
-                if (context != null)
-                {
-                    notConnectMessage = context.getString(R.string.sensor_not_contacted);
+            if (!summaryData.isSkinConnected) {
+                paint.setColor(Color.RED)
+                var notConnectMessage = "Sensor lead is not connected."
+                if (context != null) {
+                    notConnectMessage = context!!.getString(R.string.sensor_not_contacted)
                 }
-                canvas.drawText(notConnectMessage, 10, positionY, paint);
+                canvas.drawText(notConnectMessage, 10f, positionY.toFloat(), paint)
             }
-            paint.setColor(Color.DKGRAY);
-            positionY = canvas.getHeight() - lineHeight;
+            paint.setColor(Color.DKGRAY)
+            positionY = canvas.getHeight() - lineHeight
 
-            int value = summaryData.getMidGamma();
-            paint.setColor(Color.DKGRAY);
-            message = context.getString(R.string.value_title_midGamma) + " " + value;
-            canvas.drawText(message, 10, positionY, paint);
-            positionY = positionY - lineHeight;
+            var value = summaryData.getMidGamma()
+            paint.setColor(Color.DKGRAY)
+            message = context!!.getString(R.string.value_title_midGamma) + " " + value
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+            positionY = positionY - lineHeight
 
-            value = summaryData.getLowGamma();
-            paint.setColor(Color.DKGRAY);
-            message = context.getString(R.string.value_title_lowGamma) + " " + value;
-            canvas.drawText(message, 10, positionY, paint);
-            positionY = positionY - lineHeight;
+            value = summaryData.getLowGamma()
+            paint.setColor(Color.DKGRAY)
+            message = context!!.getString(R.string.value_title_lowGamma) + " " + value
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+            positionY = positionY - lineHeight
 
-            value = summaryData.getHighBeta();
-            paint.setColor(Color.DKGRAY);
-            message = context.getString(R.string.value_title_highBeta) + " " + value;
-            canvas.drawText(message, 10, positionY, paint);
-            positionY = positionY - lineHeight;
+            value = summaryData.getHighBeta()
+            paint.setColor(Color.DKGRAY)
+            message = context!!.getString(R.string.value_title_highBeta) + " " + value
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+            positionY = positionY - lineHeight
 
-            value = summaryData.getLowBeta();
-            paint.setColor(Color.DKGRAY);
-            message = context.getString(R.string.value_title_lowBeta) + " " + value;
-            canvas.drawText(message, 10, positionY, paint);
-            positionY = positionY - lineHeight;
+            value = summaryData.getLowBeta()
+            paint.setColor(Color.DKGRAY)
+            message = context!!.getString(R.string.value_title_lowBeta) + " " + value
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+            positionY = positionY - lineHeight
 
-            value = summaryData.getHighAlpha();
-            paint.setColor(Color.DKGRAY);
-            message = context.getString(R.string.value_title_highAlpha) + " " + value;
-            canvas.drawText(message, 10, positionY, paint);
-            positionY = positionY - lineHeight;
+            value = summaryData.getHighAlpha()
+            paint.setColor(Color.DKGRAY)
+            message = context!!.getString(R.string.value_title_highAlpha) + " " + value
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+            positionY = positionY - lineHeight
 
-            value = summaryData.getLowAlpha();
-            paint.setColor(Color.DKGRAY);
-            message = context.getString(R.string.value_title_lowAlpha) + " " + value;
-            canvas.drawText(message, 10, positionY, paint);
-            positionY = positionY - lineHeight;
+            value = summaryData.getLowAlpha()
+            paint.setColor(Color.DKGRAY)
+            message = context!!.getString(R.string.value_title_lowAlpha) + " " + value
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+            positionY = positionY - lineHeight
 
-            value = summaryData.getTheta();
-            paint.setColor(Color.DKGRAY);
-            message = context.getString(R.string.value_title_theta) + " " + value;
-            canvas.drawText(message, 10, positionY, paint);
-            positionY = positionY - lineHeight;
+            value = summaryData.getTheta()
+            paint.setColor(Color.DKGRAY)
+            message = context!!.getString(R.string.value_title_theta) + " " + value
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+            positionY = positionY - lineHeight
 
-            value = summaryData.getDelta();
-            paint.setColor(Color.DKGRAY);
-            message = context.getString(R.string.value_title_delta) + " " + value;
-            canvas.drawText(message, 10, positionY, paint);
+            value = summaryData.getDelta()
+            paint.setColor(Color.DKGRAY)
+            message = context!!.getString(R.string.value_title_delta) + " " + value
+            canvas.drawText(message, 10f, positionY.toFloat(), paint)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-
-
     }
 
-    @Override
-    public void drawGraph()
-    {
-        postInvalidate();
+    override fun drawGraph() {
+        postInvalidate()
     }
 }
 

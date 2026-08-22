@@ -1,106 +1,84 @@
-package net.osdn.gokigen.blecontrol.lib.ble.connect;
+package net.osdn.gokigen.blecontrol.lib.ble.connect
 
-import android.content.Context;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.content.Context
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
+import net.osdn.gokigen.blecontrol.lib.ble.R
 
-import java.util.List;
+class CameraBleSetArrayAdapter internal constructor(
+    private val context: FragmentActivity,
+    private val textViewResourceId: Int,
+    private val listItems: MutableList<CameraBleSetArrayItem>,
+    private val dialogDismiss: ICameraSetDialogDismiss?
+) : ArrayAdapter<CameraBleSetArrayItem?>(
+    context,
+    textViewResourceId,
+    listItems
+) {
+    private val TAG = toString()
+    private val inflater: LayoutInflater
 
-import androidx.annotation.NonNull;
-
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-
-
-public class CameraBleSetArrayAdapter extends ArrayAdapter<CameraBleSetArrayItem>
-{
-    private final String TAG = toString();
-    private final Context context;
-    private LayoutInflater inflater;
-    private final int textViewResourceId;
-    private final ICameraSetDialogDismiss dialogDismiss;
-    private List<CameraBleSetArrayItem> listItems;
-
-    CameraBleSetArrayAdapter(Context context, int textId, List<CameraBleSetArrayItem> items, ICameraSetDialogDismiss dialogDismiss)
-    {
-        super(context, textId, items);
-
-        this.context = context;
-        textViewResourceId = textId;
-        listItems = items;
-        this.dialogDismiss = dialogDismiss;
-
-        inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    init {
+        inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     }
 
     /**
-     *
+     * 
      */
-    @Override
-    public @NonNull
-    View getView(int position, View convertView, @NonNull ViewGroup parent)
-    {
-        View view;
-        if(convertView != null)
-        {
-            view = convertView;
-        }
-        else
-        {
-            view = inflater.inflate(textViewResourceId, null);
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view: View?
+        if (convertView != null) {
+            view = convertView
+        } else {
+            view = inflater.inflate(textViewResourceId, null)
         }
 
-        try
-        {
-            final CameraBleSetArrayItem item = listItems.get(position);
+        try {
+            val item = listItems.get(position)
 
-            final EditText btNameEdit = view.findViewWithTag("bt_name");
-            btNameEdit.setText(item.getBtName());
+            val btNameEdit = view.findViewWithTag<EditText>("bt_name")
+            btNameEdit.setText(item.getBtName())
 
-            final EditText passCodeEdit = view.findViewWithTag("bt_passcode");
-            passCodeEdit.setText(item.getBtPassCode());
+            val passCodeEdit = view.findViewWithTag<EditText>("bt_passcode")
+            passCodeEdit.setText(item.getBtPassCode())
 
-            TextView infoView = view.findViewWithTag("info");
-            infoView.setText(item.getInformation());
+            val infoView = view.findViewWithTag<TextView>("info")
+            infoView.setText(item.getInformation())
 
-            Button button = view.findViewWithTag("button");
-            button.setOnClickListener(new Button.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
+            val button = view.findViewWithTag<Button>("button")
+            button.setOnClickListener(object : View.OnClickListener {
+                override fun onClick(view: View?) {
+                    val idHeader = item.getDataId()
+                    val btName = btNameEdit.getText().toString()
+                    val btCode = passCodeEdit.getText().toString()
+                    val itemInfo = item.getInformation()
 
-                    String idHeader = item.getDataId();
-                    String btName = btNameEdit.getText().toString();
-                    String btCode = passCodeEdit.getText().toString();
-                    String itemInfo = item.getInformation();
-
-                    Log.v(TAG, "CLICKED : " + idHeader + " " + btName + " [" + btCode + "] (" + item.getBtName() + " " + itemInfo + ")" );
-                    if (dialogDismiss != null)
-                    {
-                        dialogDismiss.setOlyCameraSet(idHeader, btName, btCode, itemInfo);
+                    Log.v(
+                        TAG,
+                        "CLICKED : " + idHeader + " " + btName + " [" + btCode + "] (" + item.getBtName() + " " + itemInfo + ")"
+                    )
+                    if (dialogDismiss != null) {
+                        dialogDismiss.setOlyCameraSet(idHeader, btName, btCode, itemInfo)
                     }
-                    Log.v(TAG, "REGISTERD CAMERA : " + idHeader + " " + btName);
+                    Log.v(TAG, "REGISTERD CAMERA : " + idHeader + " " + btName)
 
                     // Toastで保管したことを通知する
-                    String restoredMessage = context.getString(R.string.saved_my_camera) + btName;
-                    Toast.makeText(context, restoredMessage, Toast.LENGTH_SHORT).show();
-
+                    val restoredMessage = context.getString(R.string.saved_my_camera) + btName
+                    Toast.makeText(context, restoredMessage, Toast.LENGTH_SHORT).show()
                 }
-            });
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            })
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
-        return (view);
+        return (view)
     }
-
 }

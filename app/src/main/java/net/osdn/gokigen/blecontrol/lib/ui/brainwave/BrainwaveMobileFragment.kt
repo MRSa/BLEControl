@@ -1,140 +1,125 @@
-package net.osdn.gokigen.blecontrol.lib.ui.brainwave;
+package net.osdn.gokigen.blecontrol.lib.ui.brainwave
 
-import android.content.Context;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.Spinner;
-import android.widget.Switch;
-import android.widget.TextView;
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.Spinner
+import android.widget.Switch
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import net.osdn.gokigen.blecontrol.lib.ble.MyBleAdapter
+import net.osdn.gokigen.blecontrol.lib.ble.MyBleDevice
+import net.osdn.gokigen.blecontrol.lib.ble.R
+import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveDataHolder
+import net.osdn.gokigen.blecontrol.lib.ui.brainwave.BrainwaveConnection.SelectDevice
 
-import androidx.annotation.Nullable;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+class BrainwaveMobileFragment : Fragment(), SelectDevice {
+    private val TAG = toString()
+    private var bondedDeviceList: List<MyBleDevice>? = null
+    private var dataHolder: BrainwaveDataHolder? = null
+    private var selectedDevicePosition = 0
+    private var bleAdapter: MyBleAdapter? = null
 
-import net.osdn.gokigen.blecontrol.lib.ble.MyBleAdapter;
-import net.osdn.gokigen.blecontrol.lib.ble.MyBleDevice;
-import net.osdn.gokigen.blecontrol.lib.ble.R;
-import net.osdn.gokigen.blecontrol.lib.data.brainwave.BrainwaveDataHolder;
-
-import java.util.List;
-
-public class BrainwaveMobileFragment extends Fragment implements BrainwaveConnection.SelectDevice
-{
-    private final String TAG = toString();
-    private List<MyBleDevice> bondedDeviceList = null;
-    private BrainwaveDataHolder dataHolder = null;
-    private int selectedDevicePosition = 0;
-    private MyBleAdapter bleAdapter = null;
-
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
-        final BrainwaveMobileViewModel brainwaveViewModel = ViewModelProviders.of(this).get(BrainwaveMobileViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_brainwave, container, false);
-        final BrainwaveRawGraphView cameraLiveImageView = root.findViewById(R.id.cameraLiveImageView);
-        bleAdapter = new MyBleAdapter(getActivity());
-        bleAdapter.prepare();
-        dataHolder = new BrainwaveDataHolder(cameraLiveImageView, 16000);
-        cameraLiveImageView.setDataHolder(dataHolder);
-        final TextView textView = root.findViewById(R.id.text_brainwave);
-        brainwaveViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val brainwaveViewModel = ViewModelProviders.of(this)
+            .get<BrainwaveMobileViewModel>(BrainwaveMobileViewModel::class.java)
+        val root = inflater.inflate(R.layout.fragment_brainwave, container, false)
+        val cameraLiveImageView = root.findViewById<BrainwaveRawGraphView>(R.id.cameraLiveImageView)
+        bleAdapter = MyBleAdapter(getActivity()!!)
+        bleAdapter!!.prepare()
+        dataHolder = BrainwaveDataHolder(cameraLiveImageView, 16000)
+        cameraLiveImageView.setDataHolder(dataHolder)
+        val textView = root.findViewById<TextView>(R.id.text_brainwave)
+        brainwaveViewModel.text.observe(getViewLifecycleOwner(), object : Observer<String?> {
+            override fun onChanged(s: String?) {
+                textView.setText(s)
             }
-        });
-        try
-        {
-            FragmentActivity context = getActivity();
-            if (context != null)
-            {
+        })
+        try {
+            val context = getActivity()
+            if (context != null) {
                 // Bonded Device List
-                prepareDeviceSelection(context, root);
+                prepareDeviceSelection(context, root)
 
                 // Connect Button
-                final Switch loggingSwitch = root.findViewById(R.id.switch_logging);
-                final BrainwaveConnection eegConnection = new BrainwaveConnection(context, this, brainwaveViewModel, dataHolder, loggingSwitch);
-                final Button queryButton = root.findViewById(R.id.connect_to_eeg);
-                if (queryButton != null)
-                {
-                    queryButton.setOnClickListener(eegConnection);
+                val loggingSwitch = root.findViewById<Switch?>(R.id.switch_logging)
+                val eegConnection = BrainwaveConnection(
+                    context,
+                    this,
+                    brainwaveViewModel,
+                    dataHolder!!,
+                    loggingSwitch
+                )
+                val queryButton = root.findViewById<Button?>(R.id.connect_to_eeg)
+                if (queryButton != null) {
+                    queryButton.setOnClickListener(eegConnection)
                 }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return root;
+        return root
     }
 
     /**
-     *   通信先デバイスの設定 （選択できるようにする）
-     *
+     * 通信先デバイスの設定 （選択できるようにする）
+     * 
      * @param context  context
      * @param root     view root
      */
-    private void prepareDeviceSelection(@NonNull FragmentActivity context, @NonNull View root)
-    {
-        try
-        {
-            final Spinner selection_device = root.findViewById(R.id.spinner_selection_eeg_device);
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(context,android.R.layout.simple_spinner_item);
-            bondedDeviceList = bleAdapter.getBondedDeviceList();
-            for (MyBleDevice device : bondedDeviceList) {
-                adapter.add(device.getName());
+    private fun prepareDeviceSelection(context: FragmentActivity, root: View) {
+        try {
+            val selection_device = root.findViewById<Spinner>(R.id.spinner_selection_eeg_device)
+            val adapter = ArrayAdapter<String?>(context, android.R.layout.simple_spinner_item)
+            bondedDeviceList = bleAdapter!!.getBondedDeviceList()
+            for (device in bondedDeviceList!!) {
+                adapter.add(device.name)
             }
-            selection_device.setAdapter(adapter);
-            selection_device.setSelection(selectedDevicePosition);
-            selection_device.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-            {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
-                {
-                    Log.v(TAG, "onItemSelected : " + position + " (" + id + ")");
-                    try
-                    {
-                        selectedDevicePosition = position;
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
+            selection_device.setAdapter(adapter)
+            selection_device.setSelection(selectedDevicePosition)
+            selection_device.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    Log.v(TAG, "onItemSelected : " + position + " (" + id + ")")
+                    try {
+                        selectedDevicePosition = position
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
                 }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> parent)
-                {
-                    Log.v(TAG, "onNothingSelected");
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    Log.v(TAG, "onNothingSelected")
                 }
-            });
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            })
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    @Override
-    public String getSelectedDeviceName()
-    {
-        String deviceName = "";
-        try
-        {
-            deviceName = (bondedDeviceList.get(selectedDevicePosition)).getName();
+    override fun getSelectedDeviceName(): String {
+        var deviceName = ""
+        try {
+            deviceName = (bondedDeviceList!!.get(selectedDevicePosition)).name
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return (deviceName);
+        return (deviceName)
     }
 }

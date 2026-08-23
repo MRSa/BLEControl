@@ -12,6 +12,7 @@
     <string name="action_exit">Exit</string>
     <string name="action_fv100_connect">Connect</string>
     <string name="label_device">DEVICE</string>
+    <string name="permission_not_granted">Permissions not granted by the user.</string>
 
     <string name="menu_home">Home</string>
     <string name="menu_fv100">FV-100</string>
@@ -26,6 +27,12 @@
 
     <string name="pref_ble_settings">Bluetooth LE Settings</string>
     <string name="pref_summary_ble_settings">Entry your camera name and passcode.</string>
+
+    <string name="ble_scan_start">Scanning </string>
+    <string name="ble_wake_start">Start </string>
+    <string name="ble_scan_done"> Done.</string>
+    <string name="ble_control_is_limited_version">Bluetooth control is available from Android 5.0 (Lollipop) onwards.</string>
+    <string name="ble_adapter_is_nothing">The Bluetooth scanner not available.</string>
 
     <string name="launch_fail_via_ble">  Launch fail. via BLE : </string>
     <string name="ble_setting_is_off">Bluetooth is currently off.</string>

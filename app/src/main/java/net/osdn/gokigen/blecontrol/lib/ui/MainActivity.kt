@@ -31,7 +31,6 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import net.osdn.gokigen.blecontrol.lib.ble.R
-import kotlin.text.toInt
 
 class MainActivity : AppCompatActivity() {
 

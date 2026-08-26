@@ -7,6 +7,7 @@
     tools:context="net.osdn.gokigen.blecontrol.lib.ui.MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
@@ -28,6 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
+        android:contentDescription="@string/desc_wifi"
         app:tint="@color/colorWhite"
         app:srcCompat="@drawable/ic_wifi_black_24dp" />
 
